@@ -1,12 +1,29 @@
-<?= var_dump(session()->get('role')) ?>
 <?= $this->extend('index') ?>
-
 <?= $this->section('content') ?>
-<div class="container">
-  <h1>Dashboard Admin</h1>
-  <p>Selamat datang di dashboard admin</p>
-  <a href="<?= base_url('ipds') ?>" class="btn btn-primary">Ke Dashboard IPDS</a>
-  <a href="<?= base_url('logout') ?>" class="btn btn-danger">Logout</a>
+<div class="container mt-4">
+  <h2>Edit Opsi Kegiatan</h2>
+  <form action="<?= base_url('kegiatan-option/update/' . $opsi['uuid']) ?>" method="post">
+    <div class="mb-3">
+      <label for="kode_kegiatan" class="form-label">Kode Kegiatan</label>
+      <input type="text" class="form-control<?= isset($validation) && $validation->hasError('kode_kegiatan') ? ' is-invalid' : '' ?>" id="kode_kegiatan" name="kode_kegiatan" value="<?= old('kode_kegiatan', $opsi['kode_kegiatan']) ?>" required>
+      <?php if (isset($validation) && $validation->hasError('kode_kegiatan')): ?>
+        <div class="invalid-feedback">
+          <?= $validation->getError('kode_kegiatan') ?>
+        </div>
+      <?php endif; ?>
+    </div>
+    <div class="mb-3">
+      <label for="nama_kegiatan" class="form-label">Nama Kegiatan</label>
+      <input type="text" class="form-control<?= isset($validation) && $validation->hasError('nama_kegiatan') ? ' is-invalid' : '' ?>" id="nama_kegiatan" name="nama_kegiatan" value="<?= old('nama_kegiatan', $opsi['nama_kegiatan']) ?>" required>
+      <?php if (isset($validation) && $validation->hasError('nama_kegiatan')): ?>
+        <div class="invalid-feedback">
+          <?= $validation->getError('nama_kegiatan') ?>
+        </div>
+      <?php endif; ?>
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
+    <a href="<?= base_url('kegiatan-option') ?>" class="btn btn-secondary">Batal</a>
+  </form>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>

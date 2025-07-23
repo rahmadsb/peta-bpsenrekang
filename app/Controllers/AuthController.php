@@ -26,6 +26,7 @@ class AuthController extends BaseController
       $session->set([
         'user_id' => $user['id'],
         'username' => $user['username'],
+        'role' => $user['role'],
         'logged_in' => true
       ]);
       return redirect()->to('/admin');

@@ -28,8 +28,8 @@ class Kegiatan extends Migration
         'constraint' => 4,
       ],
       'bulan' => [
-        'type' => 'INT',
-        'constraint' => 2,
+        'type' => 'VARCHAR',
+        'constraint' => 20,
       ],
       'tanggal_batas_cetak' => [
         'type' => 'DATE',

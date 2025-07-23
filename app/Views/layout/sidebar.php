@@ -46,6 +46,18 @@
           </a>
         </li>
         <li class="nav-item">
+          <a href="<?= base_url('kegiatan-option') ?>" class="nav-link">
+            <i class="nav-icon fas fa-tasks"></i>
+            <p>Opsi Kegiatan</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="<?= base_url('kegiatan') ?>" class="nav-link">
+            <i class="nav-icon fas fa-calendar-check"></i>
+            <p>Manajemen Kegiatan</p>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="<?= base_url('wilkerstat') ?>" class="nav-link">
             <i class="nav-icon fas fa-map-marker-alt"></i>
             <p>Wilkerstat</p>

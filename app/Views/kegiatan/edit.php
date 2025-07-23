@@ -63,9 +63,19 @@
       <?php endif; ?>
     </div>
     <h4>Pilih Wilkerstat untuk Kegiatan Ini</h4>
-    <div class="row">
-      <div class="col-md-4">
-        <h5>Blok Sensus</h5>
+    <ul class="nav nav-tabs" id="wilkerstatTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="blok-sensus-tab" data-toggle="tab" href="#blok-sensus" role="tab">Blok Sensus</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="sls-tab" data-toggle="tab" href="#sls" role="tab">SLS</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="desa-tab" data-toggle="tab" href="#desa" role="tab">Desa</a>
+      </li>
+    </ul>
+    <div class="tab-content mt-3" id="wilkerstatTabContent">
+      <div class="tab-pane fade show active" id="blok-sensus" role="tabpanel">
         <input type="text" class="form-control mb-2 search-bs" placeholder="Cari blok sensus...">
         <table class="table table-bordered table-sm" id="table-blok-sensus">
           <thead>
@@ -80,14 +90,13 @@
               <tr>
                 <td><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs" <?= in_array($bs['uuid'], $selectedBlokSensus ?? []) ? 'checked' : '' ?>></td>
                 <td><?= esc($bs['kode_bs']) ?></td>
-                <td><?= esc($bs['nama_bs']) ?></td>
+                <td><?= esc($bs['nama_sls']) ?></td>
               </tr>
             <?php endforeach; ?>
           </tbody>
         </table>
       </div>
-      <div class="col-md-4">
-        <h5>SLS</h5>
+      <div class="tab-pane fade" id="sls" role="tabpanel">
         <input type="text" class="form-control mb-2 search-sls" placeholder="Cari SLS...">
         <table class="table table-bordered table-sm" id="table-sls">
           <thead>
@@ -108,8 +117,7 @@
           </tbody>
         </table>
       </div>
-      <div class="col-md-4">
-        <h5>Desa</h5>
+      <div class="tab-pane fade" id="desa" role="tabpanel">
         <input type="text" class="form-control mb-2 search-desa" placeholder="Cari desa...">
         <table class="table table-bordered table-sm" id="table-desa">
           <thead>
@@ -185,6 +193,17 @@
         format: 'YYYY-MM-DD'
       }
     });
+  });
+</script>
+<script>
+  $(document).ready(function() {
+    $('#table-desa').DataTable();
+  });
+  $(document).ready(function() {
+    $('#table-sls').DataTable();
+  });
+  $(document).ready(function() {
+    $('#table-blok-sensus').DataTable();
   });
 </script>
 <script>

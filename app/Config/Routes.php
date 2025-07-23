@@ -27,6 +27,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->post('blok-sensus/delete/(:segment)', 'BlokSensusController::delete/$1');
   $routes->get('blok-sensus/export-excel', 'BlokSensusController::exportExcel');
   $routes->post('blok-sensus/import-excel', 'BlokSensusController::importExcel');
+  $routes->get('blok-sensus/detail/(:segment)', 'BlokSensusController::detail/$1');
 
   $routes->get('sls', 'SlsController::index');
   $routes->get('sls/create', 'SlsController::create');
@@ -36,6 +37,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->post('sls/delete/(:segment)', 'SlsController::delete/$1');
   $routes->get('sls/export-excel', 'SlsController::exportExcel');
   $routes->post('sls/import-excel', 'SlsController::importExcel');
+  $routes->get('sls/detail/(:segment)', 'SlsController::detail/$1');
 
   $routes->get('desa', 'DesaController::index');
   $routes->get('desa/create', 'DesaController::create');
@@ -45,6 +47,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->post('desa/delete/(:segment)', 'DesaController::delete/$1');
   $routes->get('desa/export-excel', 'DesaController::exportExcel');
   $routes->post('desa/import-excel', 'DesaController::importExcel');
+  $routes->get('desa/detail/(:segment)', 'DesaController::detail/$1');
 
   $routes->get('kelola-peta-wilkerstat/(:segment)', 'KelolaPetaWilkerstatController::index/$1');
   $routes->post('kelola-peta-wilkerstat/upload', 'KelolaPetaWilkerstatController::upload');
@@ -65,3 +68,12 @@ $routes->post('kegiatan/store', 'KegiatanController::store');
 $routes->get('kegiatan/edit/(:segment)', 'KegiatanController::edit/$1');
 $routes->post('kegiatan/update/(:segment)', 'KegiatanController::update/$1');
 $routes->get('kegiatan/delete/(:segment)', 'KegiatanController::delete/$1');
+
+$routes->get('preview-peta/(:any)', function ($filename) {
+  $path = WRITEPATH . 'uploads/' . $filename;
+  if (!is_file($path)) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+  $mime = mime_content_type($path);
+  header('Content-Type: ' . $mime);
+  readfile($path);
+  exit;
+});

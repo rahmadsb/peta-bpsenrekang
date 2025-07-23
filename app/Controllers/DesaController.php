@@ -4,6 +4,9 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\DesaModel;
+use App\Models\KegiatanDesaModel;
+use App\Models\KegiatanModel;
+use App\Models\KegiatanWilkerstatPetaModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -140,5 +143,35 @@ class DesaController extends BaseController
   {
     if ($redirect = $this->checkAccess()) return $redirect;
     // Implementasi impor Excel di sini
+  }
+
+  public function detail($uuid)
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+    $desaModel = new DesaModel();
+    $desa = $desaModel->find($uuid);
+    if (!$desa) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    $pivot = (new KegiatanDesaModel())->where('desa_uuid', $uuid)->findAll();
+    $kegiatanModel = new KegiatanModel();
+    $petaModel = new KegiatanWilkerstatPetaModel();
+    $kegiatanList = [];
+    foreach ($pivot as $row) {
+      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      if ($kegiatan) {
+        $peta = $petaModel->where([
+          'kegiatan_uuid' => $kegiatan['uuid'],
+          'wilkerstat_type' => 'desa',
+          'wilkerstat_uuid' => $uuid
+        ])->findAll();
+        $kegiatan['peta'] = $peta;
+        $kegiatanList[] = $kegiatan;
+      }
+    }
+    $data = [
+      'desa' => $desa,
+      'kegiatanList' => $kegiatanList,
+      'title' => 'Detail Desa',
+    ];
+    return view('desa/detail', $data);
   }
 }

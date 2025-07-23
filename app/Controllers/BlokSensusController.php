@@ -4,6 +4,10 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\BlokSensusModel;
+use App\Models\KegiatanBlokSensusModel;
+use App\Models\KegiatanModel;
+use App\Models\KegiatanWilkerstatPetaModel;
+use App\Models\KegiatanOptionModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -148,5 +152,57 @@ class BlokSensusController extends BaseController
   {
     if ($redirect = $this->checkAccess()) return $redirect;
     // Implementasi impor Excel di sini
+  }
+
+  public function detail($uuid)
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+    $blokModel = new BlokSensusModel();
+    $blok = $blokModel->find($uuid);
+    if (!$blok) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    $pivot = (new KegiatanBlokSensusModel())->where('blok_sensus_uuid', $uuid)->findAll();
+    $kegiatanModel = new KegiatanModel();
+    $petaModel = new KegiatanWilkerstatPetaModel();
+    $kegiatanList = [];
+    foreach ($pivot as $row) {
+      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      if ($kegiatan) {
+        // Ambil file peta untuk blok sensus ini pada kegiatan ini
+        $peta = $petaModel->where([
+          'kegiatan_uuid' => $kegiatan['uuid'],
+          'wilkerstat_type' => 'blok_sensus',
+          'wilkerstat_uuid' => $uuid
+        ])->findAll();
+        $kegiatan['peta'] = $peta;
+        $kegiatanList[] = $kegiatan;
+      }
+    }
+
+    $daftarKegiatan = [];
+
+    $kegiatanOptionModel = new KegiatanOptionModel();
+    foreach ($kegiatanList as $key => $value) {
+      $kegiatanOption = $kegiatanOptionModel->find($value['kode_kegiatan_option']);
+      $daftarKegiatan[] = [
+        'nama_kegiatan' => $kegiatanOption['nama_kegiatan'] . ' ' . $value['tahun'] . ' ' . $value['bulan'],
+        'peta' => $value['peta'],
+        'tahun' => $value['tahun'],
+        'bulan' => $value['bulan'],
+        'status' => $value['status'],
+        'id_user' => $value['id_user'],
+        'uuid' => $value['uuid'],
+        'kode_kegiatan_option' => $value['kode_kegiatan_option'],
+        'nama_kegiatan_option' => $kegiatanOption['nama_kegiatan'],
+      ];
+    }
+    
+    $data = [
+      'blok' => $blok,
+      'daftarKegiatan' => $daftarKegiatan,
+      'title' => 'Detail Blok Sensus',
+    ];
+    // atur setiap kegiatanList['nama_kegiatan'] dengan nama_kegiatan
+    // ambil nama kegiatan pada opsi kegiatan
+    return view('blok_sensus/detail', $data);
   }
 }

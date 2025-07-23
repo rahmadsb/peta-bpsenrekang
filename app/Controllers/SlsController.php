@@ -4,6 +4,9 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\SlsModel;
+use App\Models\KegiatanSlsModel;
+use App\Models\KegiatanModel;
+use App\Models\KegiatanWilkerstatPetaModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -144,5 +147,35 @@ class SlsController extends BaseController
   {
     if ($redirect = $this->checkAccess()) return $redirect;
     // Implementasi impor Excel di sini
+  }
+
+  public function detail($uuid)
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+    $slsModel = new SlsModel();
+    $sls = $slsModel->find($uuid);
+    if (!$sls) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    $pivot = (new KegiatanSlsModel())->where('sls_uuid', $uuid)->findAll();
+    $kegiatanModel = new KegiatanModel();
+    $petaModel = new KegiatanWilkerstatPetaModel();
+    $kegiatanList = [];
+    foreach ($pivot as $row) {
+      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      if ($kegiatan) {
+        $peta = $petaModel->where([
+          'kegiatan_uuid' => $kegiatan['uuid'],
+          'wilkerstat_type' => 'sls',
+          'wilkerstat_uuid' => $uuid
+        ])->findAll();
+        $kegiatan['peta'] = $peta;
+        $kegiatanList[] = $kegiatan;
+      }
+    }
+    $data = [
+      'sls' => $sls,
+      'kegiatanList' => $kegiatanList,
+      'title' => 'Detail SLS',
+    ];
+    return view('sls/detail', $data);
   }
 }

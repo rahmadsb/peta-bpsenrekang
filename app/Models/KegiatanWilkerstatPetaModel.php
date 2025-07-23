@@ -13,11 +13,11 @@ class KegiatanWilkerstatPetaModel extends Model
     'wilkerstat_type',
     'wilkerstat_uuid',
     'jenis_peta',
-    'is_inset',
     'file_path',
     'nama_file',
     'uploaded_at',
-    'uploader'
+    'uploader',
+    'parent_peta_id'
   ];
   public $timestamps = false;
 }

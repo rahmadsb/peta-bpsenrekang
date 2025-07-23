@@ -56,6 +56,75 @@
                                                       echo $role === 'SUBJECT_MATTER' ? 'digunakan (SM)' : 'disiapkan (IPDS)';
                                                       ?>" readonly>
     </div>
+    <h4>Pilih Wilkerstat untuk Kegiatan Ini</h4>
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Blok Sensus</h5>
+        <input type="text" class="form-control mb-2 search-bs" placeholder="Cari blok sensus...">
+        <table class="table table-bordered table-sm" id="table-blok-sensus">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Kode</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($blokSensusList as $bs): ?>
+              <tr>
+                <td><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs"></td>
+                <td><?= esc($bs['kode_bs']) ?></td>
+                <td><?= esc($bs['nama_sls']) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-4">
+        <h5>SLS</h5>
+        <input type="text" class="form-control mb-2 search-sls" placeholder="Cari SLS...">
+        <table class="table table-bordered table-sm" id="table-sls">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Kode</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($slsList as $sls): ?>
+              <tr>
+                <td><input type="checkbox" name="sls[]" value="<?= $sls['uuid'] ?>" class="cb-sls"></td>
+                <td><?= esc($sls['kode_sls']) ?></td>
+                <td><?= esc($sls['nama_sls']) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-4">
+        <h5>Desa</h5>
+        <input type="text" class="form-control mb-2 search-desa" placeholder="Cari desa...">
+        <table class="table table-bordered table-sm" id="table-desa">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Kode</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($desaList as $desa): ?>
+              <tr>
+                <td><input type="checkbox" name="desa[]" value="<?= $desa['uuid'] ?>" class="cb-desa"></td>
+                <td><?= esc($desa['kode_desa']) ?></td>
+                <td><?= esc($desa['nama_desa']) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <button type="submit" class="btn btn-primary">Simpan</button>
     <a href="<?= base_url('kegiatan') ?>" class="btn btn-secondary">Batal</a>
   </form>
@@ -101,6 +170,48 @@
 <script src="<?= base_url('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
 <!-- SweetAlert2 -->
 <script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+<script>
+  // Search global
+  $('.search-bs').on('keyup', function() {
+    var val = $(this).val().toLowerCase();
+    $('#table-blok-sensus tbody tr').filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
+    });
+  });
+  $('.search-sls').on('keyup', function() {
+    var val = $(this).val().toLowerCase();
+    $('#table-sls tbody tr').filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
+    });
+  });
+  $('.search-desa').on('keyup', function() {
+    var val = $(this).val().toLowerCase();
+    $('#table-desa tbody tr').filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
+    });
+  });
+  // Sort by selected
+  function sortByChecked(tableId, cbClass) {
+    var rows = $(tableId + ' tbody tr').get();
+    rows.sort(function(a, b) {
+      var ac = $(a).find(cbClass).prop('checked') ? 0 : 1;
+      var bc = $(b).find(cbClass).prop('checked') ? 0 : 1;
+      return ac - bc;
+    });
+    $.each(rows, function(idx, row) {
+      $(tableId + ' tbody').append(row);
+    });
+  }
+  $('.cb-bs').on('change', function() {
+    sortByChecked('#table-blok-sensus', '.cb-bs');
+  });
+  $('.cb-sls').on('change', function() {
+    sortByChecked('#table-sls', '.cb-sls');
+  });
+  $('.cb-desa').on('change', function() {
+    sortByChecked('#table-desa', '.cb-desa');
+  });
+</script>
 <script>
   $(function() {
     $('#tanggal_batas_cetak').daterangepicker({

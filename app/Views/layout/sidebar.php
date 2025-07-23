@@ -57,12 +57,37 @@
             <p>Manajemen Kegiatan</p>
           </a>
         </li>
-        <li class="nav-item">
-          <a href="<?= base_url('wilkerstat') ?>" class="nav-link">
-            <i class="nav-icon fas fa-map-marker-alt"></i>
-            <p>Wilkerstat</p>
-          </a>
-        </li>
+        <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-map"></i>
+              <p>
+                Wilkerstat
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="<?= base_url('blok-sensus') ?>" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Blok Sensus</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?= base_url('sls') ?>" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>SLS</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?= base_url('desa') ?>" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Desa</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+        <?php endif; ?>
       </ul>
     </nav>
     <!-- /.sidebar-menu -->

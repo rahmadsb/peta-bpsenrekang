@@ -19,6 +19,37 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->get('user/edit/(:segment)', 'UserController::edit/$1');
   $routes->post('user/update/(:segment)', 'UserController::update/$1');
   $routes->get('user/delete/(:segment)', 'UserController::delete/$1');
+  $routes->get('blok-sensus', 'BlokSensusController::index');
+  $routes->get('blok-sensus/create', 'BlokSensusController::create');
+  $routes->post('blok-sensus/store', 'BlokSensusController::store');
+  $routes->get('blok-sensus/edit/(:segment)', 'BlokSensusController::edit/$1');
+  $routes->post('blok-sensus/update/(:segment)', 'BlokSensusController::update/$1');
+  $routes->post('blok-sensus/delete/(:segment)', 'BlokSensusController::delete/$1');
+  $routes->get('blok-sensus/export-excel', 'BlokSensusController::exportExcel');
+  $routes->post('blok-sensus/import-excel', 'BlokSensusController::importExcel');
+
+  $routes->get('sls', 'SlsController::index');
+  $routes->get('sls/create', 'SlsController::create');
+  $routes->post('sls/store', 'SlsController::store');
+  $routes->get('sls/edit/(:segment)', 'SlsController::edit/$1');
+  $routes->post('sls/update/(:segment)', 'SlsController::update/$1');
+  $routes->post('sls/delete/(:segment)', 'SlsController::delete/$1');
+  $routes->get('sls/export-excel', 'SlsController::exportExcel');
+  $routes->post('sls/import-excel', 'SlsController::importExcel');
+
+  $routes->get('desa', 'DesaController::index');
+  $routes->get('desa/create', 'DesaController::create');
+  $routes->post('desa/store', 'DesaController::store');
+  $routes->get('desa/edit/(:segment)', 'DesaController::edit/$1');
+  $routes->post('desa/update/(:segment)', 'DesaController::update/$1');
+  $routes->post('desa/delete/(:segment)', 'DesaController::delete/$1');
+  $routes->get('desa/export-excel', 'DesaController::exportExcel');
+  $routes->post('desa/import-excel', 'DesaController::importExcel');
+
+  $routes->get('kelola-peta-wilkerstat/(:segment)', 'KelolaPetaWilkerstatController::index/$1');
+  $routes->post('kelola-peta-wilkerstat/upload', 'KelolaPetaWilkerstatController::upload');
+  $routes->get('kelola-peta-wilkerstat/download/(:num)', 'KelolaPetaWilkerstatController::download/$1');
+  $routes->post('kelola-peta-wilkerstat/delete/(:num)', 'KelolaPetaWilkerstatController::delete/$1');
 });
 
 $routes->get('kegiatan-option', 'KegiatanOptionController::index');

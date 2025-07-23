@@ -1,36 +1,42 @@
-<?= $this->extend('index') ?>
-<?= $this->section('content') ?>
-<div class="container mt-4">
-  <h2>Manajemen Kegiatan</h2>
-  <?php if ($canManage): ?>
-    <a href="<?= base_url('kegiatan/create') ?>" class="btn btn-primary mb-3">Tambah Kegiatan</a>
-  <?php endif; ?>
-  <table class="table table-bordered" id="table">
+<?php $this->extend('index'); ?>
+<?php $this->section('content'); ?>
+<div class="container-fluid">
+  <h1><?= $title ?></h1>
+  <a href="<?= base_url('sls/create') ?>" class="btn btn-primary mb-3">Tambah SLS</a>
+  <a href="<?= base_url('sls/export-excel') ?>" class="btn btn-success mb-3">Ekspor Excel</a>
+  <form action="<?= base_url('sls/import-excel') ?>" method="post" enctype="multipart/form-data" class="d-inline">
+    <input type="file" name="excel_file" required>
+    <button type="submit" class="btn btn-info mb-3">Impor Excel</button>
+  </form>
+  <table id="slsTable" class="table table-bordered table-striped">
     <thead>
       <tr>
-        <th>Opsi Kegiatan</th>
-        <th>Tahun</th>
-        <th>Bulan</th>
-        <th>Tanggal Batas Cetak</th>
-        <th>Status</th>
-        <?php if ($canManage): ?><th>Aksi</th><?php endif; ?>
+        <th>Kode SLS</th>
+        <th>Nama SLS</th>
+        <th>Kode Desa</th>
+        <th>Nama Desa</th>
+        <th>Kecamatan</th>
+        <th>Kabupaten</th>
+        <th>Provinsi</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($kegiatan as $item): ?>
+      <?php foreach ($sls as $row): ?>
         <tr>
-          <td><?= esc($opsiMap[$item['kode_kegiatan_option']] ?? '-') ?></td>
-          <td><?= esc($item['tahun']) ?></td>
-          <td><?= esc($item['bulan']) ?></td>
-          <td><?= esc($item['tanggal_batas_cetak']) ?></td>
-          <td><?= esc($item['status']) ?></td>
-          <?php if ($canManage): ?>
-            <td>
-              <a href="<?= base_url('kegiatan/edit/' . $item['uuid']) ?>" class="btn btn-sm btn-warning">Edit</a>
-              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['uuid']) ?>" class="btn btn-sm btn-info">Kelola Peta Wilkerstat</a>
-              <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('kegiatan/delete/' . $item['uuid']) ?>">Hapus</a>
-            </td>
-          <?php endif; ?>
+          <td><?= esc($row['kode_sls']) ?></td>
+          <td><?= esc($row['nama_sls']) ?></td>
+          <td><?= esc($row['kode_desa']) ?></td>
+          <td><?= esc($row['nama_desa']) ?></td>
+          <td><?= esc($row['nama_kecamatan']) ?></td>
+          <td><?= esc($row['nama_kabupaten']) ?></td>
+          <td><?= esc($row['nama_provinsi']) ?></td>
+          <td>
+            <a href="<?= base_url('sls/edit/' . $row['uuid']) ?>" class="btn btn-warning btn-sm">Edit</a>
+            <form action="<?= base_url('sls/delete/' . $row['uuid']) ?>" method="post" class="d-inline delete-form">
+              <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
+            </form>
+          </td>
         </tr>
       <?php endforeach; ?>
     </tbody>
@@ -75,13 +81,13 @@
 <script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
 <script>
   $(document).ready(function() {
-    $('#table').DataTable();
+    $('#slsTable').DataTable();
     $('.btn-delete').on('click', function(e) {
       e.preventDefault();
-      var url = $(this).data('url');
+      const form = $(this).closest('form');
       Swal.fire({
-        title: 'Yakin ingin menghapus kegiatan ini?',
-        text: "Tindakan ini tidak bisa dibatalkan!",
+        title: 'Yakin hapus data?',
+        text: 'Data yang dihapus tidak dapat dikembalikan!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -90,7 +96,7 @@
         cancelButtonText: 'Batal'
       }).then((result) => {
         if (result.isConfirmed) {
-          window.location.href = url;
+          form.submit();
         }
       });
     });
@@ -100,7 +106,7 @@
   <script>
     Swal.fire({
       icon: 'success',
-      title: 'Sukses!',
+      title: 'Berhasil',
       text: '<?= session()->getFlashdata('success') ?>',
       timer: 2000,
       showConfirmButton: false
@@ -111,11 +117,11 @@
   <script>
     Swal.fire({
       icon: 'error',
-      title: 'Gagal!',
+      title: 'Gagal',
       text: '<?= session()->getFlashdata('error') ?>',
-      timer: 2500,
+      timer: 2000,
       showConfirmButton: false
     });
   </script>
 <?php endif; ?>
-<?= $this->endSection() ?>
+<?php $this->endSection(); ?>

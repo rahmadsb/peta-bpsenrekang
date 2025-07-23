@@ -40,6 +40,10 @@ class CreateBlokSensus extends Migration
         'type' => 'VARCHAR',
         'constraint' => 10,
       ],
+      'kode_sls' => [
+        'type' => 'VARCHAR',
+        'constraint' => 10,
+      ],
       'nama_provinsi' => [
         'type' => 'VARCHAR',
         'constraint' => 100,

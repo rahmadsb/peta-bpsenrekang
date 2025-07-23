@@ -6,6 +6,12 @@ use App\Controllers\BaseController;
 use App\Models\KegiatanModel;
 use App\Models\KegiatanOptionModel;
 use Ramsey\Uuid\Uuid;
+use App\Models\KegiatanBlokSensusModel;
+use App\Models\KegiatanSlsModel;
+use App\Models\KegiatanDesaModel;
+use App\Models\BlokSensusModel;
+use App\Models\SlsModel;
+use App\Models\DesaModel;
 
 class KegiatanController extends BaseController
 {
@@ -54,6 +60,10 @@ class KegiatanController extends BaseController
     $data['opsi'] = $optionModel->findAll();
     $data['title'] = 'Tambah Kegiatan';
     $data['bulanList'] = $this->bulanList;
+    $data['blokSensusList'] = (new BlokSensusModel())->findAll();
+    $data['slsList'] = (new SlsModel())->findAll();
+    $data['desaList'] = (new DesaModel())->findAll();
+    
     return view('kegiatan/create', $data);
   }
 
@@ -72,14 +82,18 @@ class KegiatanController extends BaseController
       $data['opsi'] = $optionModel->findAll();
       $data['validation'] = $validation;
       $data['bulanList'] = $this->bulanList;
+      $data['blokSensusList'] = (new BlokSensusModel())->findAll();
+      $data['slsList'] = (new SlsModel())->findAll();
+      $data['desaList'] = (new DesaModel())->findAll();
       return view('kegiatan/create', $data);
     }
     $role = session('role');
     $status = 'disiapkan (IPDS)';
     if ($role === 'SUBJECT_MATTER') $status = 'digunakan (SM)';
     $model = new KegiatanModel();
+    $uuid = Uuid::uuid4()->toString();
     $model->insert([
-      'uuid' => Uuid::uuid4()->toString(),
+      'uuid' => $uuid,
       'kode_kegiatan_option' => $this->request->getPost('kode_kegiatan_option'),
       'id_user' => session('user_id'),
       'tahun' => $this->request->getPost('tahun'),
@@ -87,6 +101,19 @@ class KegiatanController extends BaseController
       'tanggal_batas_cetak' => $this->request->getPost('tanggal_batas_cetak'),
       'status' => $status,
     ]);
+    // Simpan relasi wilkerstat
+    $bsModel = new KegiatanBlokSensusModel();
+    $slsModel = new KegiatanSlsModel();
+    $desaModel = new KegiatanDesaModel();
+    foreach ($this->request->getPost('blok_sensus') ?? [] as $bs) {
+      $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
+    }
+    foreach ($this->request->getPost('sls') ?? [] as $sls) {
+      $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
+    }
+    foreach ($this->request->getPost('desa') ?? [] as $desa) {
+      $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
+    }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil ditambahkan');
   }
 
@@ -108,6 +135,12 @@ class KegiatanController extends BaseController
     ];
     $data['title'] = 'Edit Kegiatan';
     $data['bulanList'] = $this->bulanList;
+    $data['blokSensusList'] = (new BlokSensusModel())->findAll();
+    $data['slsList'] = (new SlsModel())->findAll();
+    $data['desaList'] = (new DesaModel())->findAll();
+    $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('kegiatan_uuid', $uuid)->findAll(), 'blok_sensus_uuid');
+    $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('kegiatan_uuid', $uuid)->findAll(), 'sls_uuid');
+    $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('kegiatan_uuid', $uuid)->findAll(), 'desa_uuid');
     return view('kegiatan/edit', $data);
   }
 
@@ -138,6 +171,12 @@ class KegiatanController extends BaseController
       $data['validation'] = $validation;
       $data['title'] = 'Edit Kegiatan';
       $data['bulanList'] = $this->bulanList;
+      $data['blokSensusList'] = (new BlokSensusModel())->findAll();
+      $data['slsList'] = (new SlsModel())->findAll();
+      $data['desaList'] = (new DesaModel())->findAll();
+      $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('kegiatan_uuid', $uuid)->findAll(), 'blok_sensus_uuid');
+      $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('kegiatan_uuid', $uuid)->findAll(), 'sls_uuid');
+      $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('kegiatan_uuid', $uuid)->findAll(), 'desa_uuid');
       return view('kegiatan/edit', $data);
     }
     $model = new KegiatanModel();
@@ -148,6 +187,22 @@ class KegiatanController extends BaseController
       'tanggal_batas_cetak' => $this->request->getPost('tanggal_batas_cetak'),
       'status' => $this->request->getPost('status'),
     ]);
+    // Update relasi wilkerstat
+    $bsModel = new KegiatanBlokSensusModel();
+    $slsModel = new KegiatanSlsModel();
+    $desaModel = new KegiatanDesaModel();
+    $bsModel->where('kegiatan_uuid', $uuid)->delete();
+    $slsModel->where('kegiatan_uuid', $uuid)->delete();
+    $desaModel->where('kegiatan_uuid', $uuid)->delete();
+    foreach ($this->request->getPost('blok_sensus') ?? [] as $bs) {
+      $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
+    }
+    foreach ($this->request->getPost('sls') ?? [] as $sls) {
+      $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
+    }
+    foreach ($this->request->getPost('desa') ?? [] as $desa) {
+      $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
+    }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil diupdate');
   }
 

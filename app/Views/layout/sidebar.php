@@ -13,7 +13,7 @@
         <img src=<?= base_url("img/user2-160x160.jpg") ?> class="img-circle elevation-2" alt="User Image">
       </div>
       <div class="info">
-        <a href="#" class="d-block">Alexander Pierce</a>
+        <a href="#" class="d-block"><?= session()->get('username') ?></a>
       </div>
     </div>
 
@@ -37,19 +37,19 @@
                 <p>Dashboard v1</p>
               </a>
             </li>
-            <li class="nav-item">
-              <a href="./index2.html" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Dashboard v2</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="./index3.html" class="nav-link">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Dashboard v3</p>
-              </a>
-            </li>
           </ul>
+        </li>
+        <li class="nav-item">
+          <a href="<?= base_url('user') ?>" class="nav-link">
+            <i class="nav-icon fas fa-users"></i>
+            <p>Manajemen User</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="<?= base_url('wilkerstat') ?>" class="nav-link">
+            <i class="nav-icon fas fa-map-marker-alt"></i>
+            <p>Wilkerstat</p>
+          </a>
         </li>
       </ul>
     </nav>

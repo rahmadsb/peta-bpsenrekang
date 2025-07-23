@@ -26,6 +26,10 @@
   <link rel="stylesheet" href=<?= base_url("plugins/daterangepicker/daterangepicker.css") ?>>
   <!-- summernote -->
   <link rel="stylesheet" href=<?= base_url("plugins/summernote/summernote-bs4.min.css") ?>>
+  <link rel="stylesheet" href="<?= base_url('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="<?= base_url('plugins/sweetalert2/sweetalert2.min.css') ?>">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -33,5 +37,5 @@
 
     <!-- Preloader -->
     <div class="preloader flex-column justify-content-center align-items-center">
-      <img class="animation__shake" src=<?= base_url("img/AdminLTELogo.png") ?> alt="AdminLTELogo" height="60" width="60">
+      <img class="animation__shake" src=<?= base_url("logo_bps.svg") ?> alt="AdminLTELogo" height="60" width="60">
     </div>

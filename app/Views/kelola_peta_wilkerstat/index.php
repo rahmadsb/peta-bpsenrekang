@@ -4,64 +4,86 @@
   <h1><?= $title ?></h1>
   <h4>Kegiatan: <?= esc($kegiatan['nama_kegiatan'] ?? $kegiatan['uuid']) ?></h4>
   <hr>
-  <?php foreach (['blok_sensus', 'sls', 'desa'] as $type): ?>
-    <h5><?= ucwords(str_replace('_', ' ', $type)) ?></h5>
-    <?php if (empty($wilkerstat[$type])): ?>
-      <div class="alert alert-info">Tidak ada <?= $type ?> terkait kegiatan ini.</div>
-    <?php else: ?>
-      <?php foreach ($wilkerstat[$type] as $ws): ?>
-        <div class="card mb-3">
-          <div class="card-header">
-            <?= esc($ws['nama'] ?? $ws['kode'] ?? $ws['uuid']) ?>
-          </div>
-          <div class="card-body">
-            <?php foreach ([['dengan_titik', 'Peta dengan Titik Bangunan'], ['tanpa_titik', 'Peta tanpa Titik Bangunan']] as [$jenis, $label]): ?>
-              <h6><?= $label ?></h6>
-              <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="mb-2">
-                <input type="hidden" name="kegiatan_uuid" value="<?= esc($kegiatan['uuid']) ?>">
-                <input type="hidden" name="wilkerstat_type" value="<?= $type ?>">
-                <input type="hidden" name="wilkerstat_uuid" value="<?= esc($ws['uuid']) ?>">
-                <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
-                <label>Upload file (JPG/PNG, multi):</label>
-                <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required>
-                <label class="ml-2"><input type="checkbox" name="is_inset" value="1"> File inset/perbesaran</label>
-                <button type="submit" class="btn btn-sm btn-primary ml-2">Upload</button>
-              </form>
-              <ul class="list-group mb-3">
-                <?php
-                $files = $petaModel->where([
-                  'kegiatan_uuid' => $kegiatan['uuid'],
-                  'wilkerstat_type' => $type,
-                  'wilkerstat_uuid' => $ws['uuid'],
-                  'jenis_peta' => $jenis
-                ])->findAll();
-                ?>
-                <?php if (empty($files)): ?>
-                  <li class="list-group-item text-muted">Belum ada file peta diunggah.</li>
-                <?php else: ?>
-                  <?php foreach ($files as $file): ?>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <?= esc($file['nama_file']) ?>
-                      <?php if ($file['is_inset']): ?>
-                        <span class="badge badge-info ml-2">Inset</span>
-                      <?php endif; ?>
-                      <span>
-                        <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm">Download</a>
-                        <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $file['id']) ?>" method="post" class="d-inline delete-form">
-                          <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
+
+  <ul class="nav nav-tabs" id="wilkerstatTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="blok-sensus-tab" data-toggle="tab" href="#blok-sensus" role="tab">Blok Sensus</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="sls-tab" data-toggle="tab" href="#sls" role="tab">SLS</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="desa-tab" data-toggle="tab" href="#desa" role="tab">Desa</a>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3" id="wilkerstatTabContent">
+    <?php foreach ([['blok-sensus', 'Blok Sensus'], ['sls', 'SLS'], ['desa', 'Desa']] as [$type, $label]): ?>
+      <div class="tab-pane fade<?= $type == 'blok-sensus' ? ' show active' : '' ?>" id="<?= $type ?>" role="tabpanel">
+        <?php if (!empty($wilkerstat[str_replace('-', '_', $type)])): ?>
+          <table class="table table-bordered table-sm" id="table-<?= $type ?>">
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Nama</th>
+                <th style="width:50%">Aksi Peta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($wilkerstat[str_replace('-', '_', $type)] as $ws): ?>
+                <tr>
+                  <td><?= esc($ws['kode_' . ($type == 'blok-sensus' ? 'bs' : ($type == 'sls' ? 'sls' : 'desa'))]) ?></td>
+                  <td><?= esc($ws['nama_' . ($type == 'blok-sensus' ? 'sls' : ($type == 'sls' ? 'sls' : 'desa'))]) ?></td>
+                  <td>
+                    <?php foreach ([['dengan_titik', 'Peta dengan Titik Bangunan'], ['tanpa_titik', 'Peta tanpa Titik Bangunan']] as [$jenis, $labelPeta]): ?>
+                      <div class="mb-1"><span class="badge badge-secondary mr-1"><?= $labelPeta ?></span>
+                        <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-inline">
+                          <input type="hidden" name="kegiatan_uuid" value="<?= esc($kegiatan['uuid']) ?>">
+                          <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
+                          <input type="hidden" name="wilkerstat_uuid" value="<?= esc($ws['uuid']) ?>">
+                          <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
+                          <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required style="width:160px;display:inline-block;">
+                          <label class="ml-2"><input type="checkbox" name="is_inset" value="1"> Inset</label>
+                          <button type="submit" class="btn btn-sm btn-primary ml-2">Upload</button>
                         </form>
-                      </span>
-                    </li>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </ul>
-            <?php endforeach; ?>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-    <hr>
-  <?php endforeach; ?>
+                        <ul class="list-group list-group-flush mt-1">
+                          <?php
+                          $files = $petaModel->where([
+                            'kegiatan_uuid' => $kegiatan['uuid'],
+                            'wilkerstat_type' => str_replace('-', '_', $type),
+                            'wilkerstat_uuid' => $ws['uuid'],
+                            'jenis_peta' => $jenis
+                          ])->findAll();
+                          ?>
+                          <?php if (empty($files)): ?>
+                            <li class="list-group-item py-1 px-2 text-muted">Belum ada file.</li>
+                          <?php else: ?>
+                            <?php foreach ($files as $file): ?>
+                              <li class="list-group-item py-1 px-2 d-flex justify-content-between align-items-center">
+                                <span><?= esc($file['nama_file']) ?><?php if ($file['is_inset']): ?><span class="badge badge-info ml-2">Inset</span><?php endif; ?></span>
+                                <span>
+                                  <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm">Download</a>
+                                  <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $file['id']) ?>" method="post" class="d-inline delete-form">
+                                    <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
+                                  </form>
+                                </span>
+                              </li>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
+                        </ul>
+                      </div>
+                    <?php endforeach; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        <?php else: ?>
+          <div class="alert alert-info">Tidak ada <?= $label ?> terkait kegiatan ini.</div>
+        <?php endif; ?>
+      </div>
+    <?php endforeach; ?>
+  </div>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>
@@ -118,6 +140,43 @@
           form.submit();
         }
       });
+    });
+  });
+  $(function() {
+    $('#table-blok-sensus').DataTable({
+      stateSave: true,
+      order: [
+        [0, 'asc']
+      ],
+      columnDefs: [{
+        orderable: false,
+        targets: [2]
+      }]
+    });
+    $('#table-sls').DataTable({
+      stateSave: true,
+      order: [
+        [0, 'asc']
+      ],
+      columnDefs: [{
+        orderable: false,
+        targets: [2]
+      }]
+    });
+    $('#table-desa').DataTable({
+      stateSave: true,
+      order: [
+        [0, 'asc']
+      ],
+      columnDefs: [{
+        orderable: false,
+        targets: [2]
+      }]
+    });
+    // Fix DataTables in tab
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+      var target = $(e.target).attr("href");
+      $(target).find('table.dataTable').DataTable().columns.adjust().draw();
     });
   });
 </script>

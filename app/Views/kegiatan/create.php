@@ -74,7 +74,7 @@
         <table class="table table-bordered table-sm" id="table-blok-sensus">
           <thead>
             <tr>
-              <th></th>
+              <th class="dt-checkbox"></th>
               <th>Kode</th>
               <th>Nama</th>
             </tr>
@@ -82,7 +82,7 @@
           <tbody>
             <?php foreach ($blokSensusList as $bs): ?>
               <tr>
-                <td><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs"></td>
+                <td class="dt-checkbox"><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs"></td>
                 <td><?= esc($bs['kode_bs']) ?></td>
                 <td><?= esc($bs['nama_sls']) ?></td>
               </tr>
@@ -95,7 +95,7 @@
         <table class="table table-bordered table-sm" id="table-sls">
           <thead>
             <tr>
-              <th></th>
+              <th class="dt-checkbox"></th>
               <th>Kode</th>
               <th>Nama</th>
             </tr>
@@ -103,7 +103,7 @@
           <tbody>
             <?php foreach ($slsList as $sls): ?>
               <tr>
-                <td><input type="checkbox" name="sls[]" value="<?= $sls['uuid'] ?>" class="cb-sls"></td>
+                <td class="dt-checkbox"><input type="checkbox" name="sls[]" value="<?= $sls['uuid'] ?>" class="cb-sls"></td>
                 <td><?= esc($sls['kode_sls']) ?></td>
                 <td><?= esc($sls['nama_sls']) ?></td>
               </tr>
@@ -116,7 +116,7 @@
         <table class="table table-bordered table-sm" id="table-desa">
           <thead>
             <tr>
-              <th></th>
+              <th class="dt-checkbox"></th>
               <th>Kode</th>
               <th>Nama</th>
             </tr>
@@ -124,7 +124,7 @@
           <tbody>
             <?php foreach ($desaList as $desa): ?>
               <tr>
-                <td><input type="checkbox" name="desa[]" value="<?= $desa['uuid'] ?>" class="cb-desa"></td>
+                <td class="dt-checkbox"><input type="checkbox" name="desa[]" value="<?= $desa['uuid'] ?>" class="cb-desa"></td>
                 <td><?= esc($desa['kode_desa']) ?></td>
                 <td><?= esc($desa['nama_desa']) ?></td>
               </tr>
@@ -209,27 +209,6 @@
       $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
     });
   });
-  // Sort by selected
-  function sortByChecked(tableId, cbClass) {
-    var rows = $(tableId + ' tbody tr').get();
-    rows.sort(function(a, b) {
-      var ac = $(a).find(cbClass).prop('checked') ? 0 : 1;
-      var bc = $(b).find(cbClass).prop('checked') ? 0 : 1;
-      return ac - bc;
-    });
-    $.each(rows, function(idx, row) {
-      $(tableId + ' tbody').append(row);
-    });
-  }
-  $('.cb-bs').on('change', function() {
-    sortByChecked('#table-blok-sensus', '.cb-bs');
-  });
-  $('.cb-sls').on('change', function() {
-    sortByChecked('#table-sls', '.cb-sls');
-  });
-  $('.cb-desa').on('change', function() {
-    sortByChecked('#table-desa', '.cb-desa');
-  });
 </script>
 <script>
   $(function() {
@@ -239,6 +218,26 @@
       locale: {
         format: 'YYYY-MM-DD'
       }
+    });
+  });
+</script>
+<script>
+  $('form').on('submit', function(e) {
+    ['blok-sensus', 'sls', 'desa'].forEach(function(type) {
+      var table = $('#table-' + type).DataTable();
+      var checked = table.$('input[type=checkbox]:checked').map(function() {
+        return $(this).val();
+      }).get();
+      // Hapus input hidden sebelumnya
+      $('input[name="' + type.replace('-', '_') + '[]"][type=hidden]').remove();
+      // Kirim hanya value unik
+      $.each($.unique(checked), function(i, val) {
+        $('<input>').attr({
+          type: 'hidden',
+          name: type.replace('-', '_') + '[]',
+          value: val
+        }).appendTo('form');
+      });
     });
   });
 </script>

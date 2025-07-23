@@ -9,6 +9,9 @@ use App\Models\BlokSensusModel;
 use App\Models\SlsModel;
 use App\Models\DesaModel;
 use App\Models\KegiatanOptionModel;
+use App\Models\KegiatanBlokSensusModel;
+use App\Models\KegiatanSlsModel;
+use App\Models\KegiatanDesaModel;
 
 class KelolaPetaWilkerstatController extends BaseController
 {
@@ -31,15 +34,31 @@ class KelolaPetaWilkerstatController extends BaseController
     $kegiatan = $kegiatanModel->find($kegiatan_uuid);
     if (!$kegiatan) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
     // Ambil wilkerstat terkait kegiatan (blok sensus, sls, desa)
-    // (Implementasi pengambilan wilkerstat sesuai relasi pivot yang sudah ada)
     $blokModel = new BlokSensusModel();
     $slsModel = new SlsModel();
     $desaModel = new DesaModel();
-    // TODO: Query pivot untuk ambil UUID wilkerstat terkait kegiatan
+    $blokPivot = (new KegiatanBlokSensusModel())->where('kegiatan_uuid', $kegiatan_uuid)->findAll();
+    $slsPivot = (new KegiatanSlsModel())->where('kegiatan_uuid', $kegiatan_uuid)->findAll();
+    $desaPivot = (new KegiatanDesaModel())->where('kegiatan_uuid', $kegiatan_uuid)->findAll();
+    $blokSensus = [];
+    foreach ($blokPivot as $bp) {
+      $bs = $blokModel->find($bp['blok_sensus_uuid']);
+      if ($bs) $blokSensus[] = $bs;
+    }
+    $sls = [];
+    foreach ($slsPivot as $sp) {
+      $s = $slsModel->find($sp['sls_uuid']);
+      if ($s) $sls[] = $s;
+    }
+    $desa = [];
+    foreach ($desaPivot as $dp) {
+      $d = $desaModel->find($dp['desa_uuid']);
+      if ($d) $desa[] = $d;
+    }
     $wilkerstat = [
-      'blok_sensus' => [], // array blok sensus terkait
-      'sls' => [], // array sls terkait
-      'desa' => [], // array desa terkait
+      'blok_sensus' => $blokSensus,
+      'sls' => $sls,
+      'desa' => $desa,
     ];
     $petaModel = new KegiatanWilkerstatPetaModel();
     // ambil data opsi kegiatan dari kegiatan yang dipilih

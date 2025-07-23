@@ -63,7 +63,7 @@ class KegiatanController extends BaseController
     $data['blokSensusList'] = (new BlokSensusModel())->findAll();
     $data['slsList'] = (new SlsModel())->findAll();
     $data['desaList'] = (new DesaModel())->findAll();
-    
+
     return view('kegiatan/create', $data);
   }
 
@@ -105,13 +105,13 @@ class KegiatanController extends BaseController
     $bsModel = new KegiatanBlokSensusModel();
     $slsModel = new KegiatanSlsModel();
     $desaModel = new KegiatanDesaModel();
-    foreach ($this->request->getPost('blok_sensus') ?? [] as $bs) {
+    foreach (array_unique($this->request->getPost('blok_sensus') ?? []) as $bs) {
       $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
     }
-    foreach ($this->request->getPost('sls') ?? [] as $sls) {
+    foreach (array_unique($this->request->getPost('sls') ?? []) as $sls) {
       $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
     }
-    foreach ($this->request->getPost('desa') ?? [] as $desa) {
+    foreach (array_unique($this->request->getPost('desa') ?? []) as $desa) {
       $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
     }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil ditambahkan');
@@ -194,13 +194,13 @@ class KegiatanController extends BaseController
     $bsModel->where('kegiatan_uuid', $uuid)->delete();
     $slsModel->where('kegiatan_uuid', $uuid)->delete();
     $desaModel->where('kegiatan_uuid', $uuid)->delete();
-    foreach ($this->request->getPost('blok_sensus') ?? [] as $bs) {
+    foreach (array_unique($this->request->getPost('blok_sensus') ?? []) as $bs) {
       $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
     }
-    foreach ($this->request->getPost('sls') ?? [] as $sls) {
+    foreach (array_unique($this->request->getPost('sls') ?? []) as $sls) {
       $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
     }
-    foreach ($this->request->getPost('desa') ?? [] as $desa) {
+    foreach (array_unique($this->request->getPost('desa') ?? []) as $desa) {
       $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
     }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil diupdate');

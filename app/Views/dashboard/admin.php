@@ -1,12 +1,68 @@
-<?= var_dump(session()->get('role')) ?>
 <?= $this->extend('index') ?>
 
 <?= $this->section('content') ?>
-<div class="container">
+<div class="container-fluid">
   <h1>Dashboard Admin</h1>
-  <p>Selamat datang di dashboard admin</p>
-  <a href="<?= base_url('ipds') ?>" class="btn btn-primary">Ke Dashboard IPDS</a>
-  <a href="<?= base_url('logout') ?>" class="btn btn-danger">Logout</a>
+  <div class="row mt-4">
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-primary h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Total Kegiatan</h5>
+          <h2><?= $totalKegiatan ?></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-success h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Total Peta</h5>
+          <h2><?= $totalPeta ?></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-info h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">User</h5>
+          <h2><?= $totalUser ?></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-secondary h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Blok Sensus</h5>
+          <h2><?= $totalBlok ?></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-warning h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">SLS</h5>
+          <h2><?= $totalSls ?></h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="card text-white bg-dark h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Desa</h5>
+          <h2><?= $totalDesa ?></h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Status Kegiatan</div>
+        <div class="card-body">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>
@@ -45,4 +101,33 @@
 <script src="<?= base_url('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
 <!-- SweetAlert2 -->
 <script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+<script>
+  const ctx = document.getElementById('statusChart').getContext('2d');
+  const statusChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode($statusList) ?>,
+      datasets: [{
+        label: 'Jumlah Kegiatan',
+        data: <?= json_encode(array_values($kegiatanPerStatus)) ?>,
+        backgroundColor: [
+          '#007bff', '#28a745', '#ffc107', '#17a2b8', '#343a40'
+        ],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
 <?= $this->endSection() ?>

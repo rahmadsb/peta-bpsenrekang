@@ -31,9 +31,11 @@ class CreateKegiatanWilkerstatPeta extends Migration
         'type' => 'ENUM',
         'constraint' => ['dengan_titik', 'tanpa_titik'],
       ],
-      'is_inset' => [
-        'type' => 'BOOLEAN',
-        'default' => false,
+      'parent_peta_id' => [
+        'type' => 'INT',
+        'constraint' => 11,
+        'unsigned' => true,
+        'null' => true,
       ],
       'file_path' => [
         'type' => 'VARCHAR',

@@ -63,12 +63,12 @@ class KegiatanController extends BaseController
     $data['blokSensusList'] = (new BlokSensusModel())->findAll();
     $data['slsList'] = (new SlsModel())->findAll();
     $data['desaList'] = (new DesaModel())->findAll();
-
     return view('kegiatan/create', $data);
   }
 
   public function store()
   {
+    // dd($_POST);
     if (!$this->canManage()) return redirect()->to('/kegiatan');
     $validation = \Config\Services::validation();
     $validation->setRules([

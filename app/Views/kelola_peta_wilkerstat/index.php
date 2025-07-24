@@ -1,5 +1,27 @@
 <?php $this->extend('index'); ?>
 <?php $this->section('content'); ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    <?php if (session()->getFlashdata('success')): ?>
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: '<?= session()->getFlashdata('success') ?>',
+        timer: 2500,
+        showConfirmButton: false
+      });
+    <?php elseif (session()->getFlashdata('error')): ?>
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: '<?= session()->getFlashdata('error') ?>',
+        timer: 3000,
+        showConfirmButton: false
+      });
+    <?php endif; ?>
+  });
+</script>
 <div class="container-fluid">
   <h1><?= $title ?></h1>
   <h4>Kegiatan: <?= esc($kegiatan['nama_kegiatan'] ?? $kegiatan['uuid']) ?></h4>
@@ -44,7 +66,8 @@
                           <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
                           <input type="hidden" name="wilkerstat_uuid" value="<?= esc($ws['uuid']) ?>">
                           <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
-                          <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required style="width:160px;display:inline-block;">
+                          <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required style="width:160px;display:inline-block;" class="input-preview-files">
+                          <div class="preview-files mt-1 mb-1" style="font-size:90%;color:#555;"></div>
                           <button type="submit" class="btn btn-sm btn-primary ml-2">Upload Peta Utama</button>
                         </form>
                         <ul class="list-group list-group-flush mt-1">
@@ -63,10 +86,32 @@
                             <?php foreach ($petaUtama as $utama): ?>
                               <li class="list-group-item py-1 px-2">
                                 <span class="font-weight-bold"><?= esc($utama['nama_file']) ?></span>
-                                <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $utama['id']) ?>" class="btn btn-success btn-sm ml-2" target="_blank">Download</a>
-                                <?php if (in_array(strtolower(pathinfo($utama['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
-                                  <a href="<?= base_url('preview-peta/' . $utama['file_path']) ?>" class="btn btn-info btn-sm ml-1" target="_blank">Preview</a>
-                                <?php endif; ?>
+                                <small class="d-block text-muted" style="font-size:90%">Diunggah: <?= date('d-m-Y H:i', strtotime($utama['uploaded_at'])) ?> oleh <?= esc($utama['uploader']) ?>, <?= isset($utama['file_path']) && file_exists(WRITEPATH . 'uploads/' . $utama['file_path']) ? number_format(filesize(WRITEPATH . 'uploads/' . $utama['file_path']) / 1024, 1) . ' KB' : '-' ?></small>
+                                <div class="d-flex align-items-center" style="gap:8px;">
+                                  <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $utama['id']) ?>" class="btn btn-success btn-sm ml-2" target="_blank">Download</a>
+                                  <?php if (in_array(strtolower(pathinfo($utama['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
+                                    <a href="<?= base_url('preview-peta/' . $utama['file_path']) ?>" class="btn btn-info btn-sm ml-1" target="_blank">Preview</a>
+                                  <?php endif; ?>
+                                  <button type="button" class="btn btn-warning btn-sm ml-1 btn-replace-file">Ganti</button>
+                                  <button type="button" class="btn btn-secondary btn-sm ml-1 btn-rename-file">Rename</button>
+                                  <form action="<?= base_url('kelola-peta-wilkerstat/rename/' . $utama['id']) ?>" method="post" class="form-rename-file d-none mt-2" style="max-width:300px;">
+                                    <div class="input-group input-group-sm mb-1">
+                                      <input type="text" name="new_nama_file" class="form-control" value="<?= esc($utama['nama_file']) ?>" required>
+                                      <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary">Simpan</button>
+                                        <button type="button" class="btn btn-secondary btn-cancel-rename">Batal</button>
+                                      </div>
+                                    </div>
+                                  </form>
+                                  <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $utama['id']) ?>" method="post" class="d-inline delete-form">
+                                    <button type="button" class="btn btn-danger btn-sm btn-delete ml-1">Hapus</button>
+                                  </form>
+                                </div>
+                                <form action="<?= base_url('kelola-peta-wilkerstat/replace/' . $utama['id']) ?>" method="post" enctype="multipart/form-data" class="form-replace-file d-none mt-2" style="max-width:300px;">
+                                  <input type="file" name="replace_file" accept=".jpg,.jpeg,.png" required class="form-control form-control-sm mb-1">
+                                  <button type="submit" class="btn btn-sm btn-primary">Upload Pengganti</button>
+                                  <button type="button" class="btn btn-sm btn-secondary btn-cancel-replace">Batal</button>
+                                </form>
                                 <!-- Upload inset -->
                                 <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-inline ml-3">
                                   <input type="hidden" name="kegiatan_uuid" value="<?= esc($kegiatan['uuid']) ?>">
@@ -74,8 +119,11 @@
                                   <input type="hidden" name="wilkerstat_uuid" value="<?= esc($ws['uuid']) ?>">
                                   <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
                                   <input type="hidden" name="parent_peta_id" value="<?= $utama['id'] ?>">
-                                  <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required style="width:140px;display:inline-block;">
-                                  <button type="submit" class="btn btn-sm btn-secondary ml-2">Upload Inset</button>
+                                  <div class="d-flex align-items-center" style="gap:8px;">
+                                    <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required style="width:140px;display:inline-block;" class="input-preview-files">
+                                    <div class="preview-files" style="font-size:90%;color:#555;"></div>
+                                    <button type="submit" class="btn btn-sm btn-secondary ml-2">Upload Inset</button>
+                                  </div>
                                 </form>
                                 <!-- Daftar inset -->
                                 <ul class="list-group list-group-flush mt-1">
@@ -90,11 +138,28 @@
                                     <?php foreach ($inset as $file): ?>
                                       <li class="list-group-item py-1 px-2 d-flex justify-content-between align-items-center">
                                         <span><?= esc($file['nama_file']) ?></span>
+                                        <small class="d-block text-muted" style="font-size:90%">Diunggah: <?= date('d-m-Y H:i', strtotime($file['uploaded_at'])) ?> oleh <?= esc($file['uploader']) ?>, <?= isset($file['file_path']) && file_exists(WRITEPATH . 'uploads/' . $file['file_path']) ? number_format(filesize(WRITEPATH . 'uploads/' . $file['file_path']) / 1024, 1) . ' KB' : '-' ?></small>
                                         <span>
                                           <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm" target="_blank">Download</a>
                                           <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
                                             <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-info btn-sm" target="_blank">Preview</a>
                                           <?php endif; ?>
+                                          <button type="button" class="btn btn-warning btn-sm btn-replace-file">Ganti</button>
+                                          <button type="button" class="btn btn-secondary btn-sm btn-rename-file">Rename</button>
+                                          <form action="<?= base_url('kelola-peta-wilkerstat/rename/' . $file['id']) ?>" method="post" class="form-rename-file d-none mt-2" style="max-width:300px;">
+                                            <div class="input-group input-group-sm mb-1">
+                                              <input type="text" name="new_nama_file" class="form-control" value="<?= esc($file['nama_file']) ?>" required>
+                                              <div class="input-group-append">
+                                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                                <button type="button" class="btn btn-secondary btn-cancel-rename">Batal</button>
+                                              </div>
+                                            </div>
+                                          </form>
+                                          <form action="<?= base_url('kelola-peta-wilkerstat/replace/' . $file['id']) ?>" method="post" enctype="multipart/form-data" class="form-replace-file d-none mt-2" style="max-width:300px;">
+                                            <input type="file" name="replace_file" accept=".jpg,.jpeg,.png" required class="form-control form-control-sm mb-1">
+                                            <button type="submit" class="btn btn-sm btn-primary">Upload Pengganti</button>
+                                            <button type="button" class="btn btn-sm btn-secondary btn-cancel-replace">Batal</button>
+                                          </form>
                                           <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $file['id']) ?>" method="post" class="d-inline delete-form">
                                             <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
                                           </form>
@@ -214,6 +279,39 @@
       var target = $(e.target).attr("href");
       $(target).find('table.dataTable').DataTable().columns.adjust().draw();
     });
+  });
+  // Preview nama file yang dipilih pada input file (multi-upload)
+  $(document).on('change', '.input-preview-files', function() {
+    var files = this.files;
+    var preview = $(this).closest('form').find('.preview-files');
+    if (files.length > 0) {
+      var list = '<ul style="margin-bottom:0;padding-left:18px">';
+      for (var i = 0; i < files.length; i++) {
+        list += '<li>' + files[i].name + '</li>';
+      }
+      list += '</ul>';
+      preview.html(list);
+    } else {
+      preview.html('');
+    }
+  });
+  $(document).on('click', '.btn-replace-file', function() {
+    var form = $(this).closest('li').find('.form-replace-file');
+    $('.form-replace-file').not(form).addClass('d-none');
+    form.toggleClass('d-none');
+  });
+  $(document).on('click', '.btn-cancel-replace', function(e) {
+    e.preventDefault();
+    $(this).closest('.form-replace-file').addClass('d-none');
+  });
+  $(document).on('click', '.btn-rename-file', function() {
+    var form = $(this).closest('li, .list-group-item').find('.form-rename-file');
+    $('.form-rename-file').not(form).addClass('d-none');
+    form.toggleClass('d-none');
+  });
+  $(document).on('click', '.btn-cancel-rename', function(e) {
+    e.preventDefault();
+    $(this).closest('.form-rename-file').addClass('d-none');
   });
 </script>
 <?php $this->endSection(); ?>

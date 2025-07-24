@@ -82,7 +82,7 @@ class KelolaPetaWilkerstatController extends BaseController
     $wilkerstat_type = $request->getPost('wilkerstat_type');
     $wilkerstat_uuid = $request->getPost('wilkerstat_uuid');
     $jenis_peta = $request->getPost('jenis_peta');
-    $is_inset = $request->getPost('is_inset') ? 1 : 0;
+    $parent_peta_id = $request->getPost('parent_peta_id');
     $files = $this->request->getFileMultiple('peta_files');
     $model = new \App\Models\KegiatanWilkerstatPetaModel();
     $allowed = ['image/jpeg', 'image/png'];
@@ -92,17 +92,20 @@ class KelolaPetaWilkerstatController extends BaseController
       if ($file->isValid() && in_array($file->getMimeType(), $allowed)) {
         $newName = uniqid() . '.' . $file->getExtension();
         $file->move(WRITEPATH . 'uploads', $newName);
-        $model->insert([
+        $insertData = [
           'kegiatan_uuid' => $kegiatan_uuid,
           'wilkerstat_type' => $wilkerstat_type,
           'wilkerstat_uuid' => $wilkerstat_uuid,
           'jenis_peta' => $jenis_peta,
-          'is_inset' => $is_inset,
           'file_path' => $newName,
           'nama_file' => $file->getClientName(),
           'uploaded_at' => date('Y-m-d H:i:s'),
           'uploader' => session('username'),
-        ]);
+        ];
+        if ($parent_peta_id) {
+          $insertData['parent_peta_id'] = $parent_peta_id;
+        }
+        $model->insert($insertData);
         $success++;
       } else {
         $fail++;
@@ -129,10 +132,74 @@ class KelolaPetaWilkerstatController extends BaseController
     if ($redirect = $this->checkAccess()) return $redirect;
     $petaModel = new KegiatanWilkerstatPetaModel();
     $file = $petaModel->find($id);
-    if ($file && file_exists(WRITEPATH . 'uploads/' . $file['file_path'])) {
+    if (!$file) return redirect()->back()->with('error', 'File tidak ditemukan.');
+    // Jika peta utama, hapus semua inset-nya juga
+    if (empty($file['parent_peta_id'])) {
+      $insets = $petaModel->where('parent_peta_id', $id)->findAll();
+      foreach ($insets as $inset) {
+        if ($inset['file_path'] && file_exists(WRITEPATH . 'uploads/' . $inset['file_path'])) {
+          unlink(WRITEPATH . 'uploads/' . $inset['file_path']);
+        }
+        $petaModel->delete($inset['id']);
+      }
+    }
+    // Hapus file utama/inset
+    if ($file['file_path'] && file_exists(WRITEPATH . 'uploads/' . $file['file_path'])) {
       unlink(WRITEPATH . 'uploads/' . $file['file_path']);
     }
     $petaModel->delete($id);
-    return redirect()->back()->with('success', 'File peta berhasil dihapus');
+    return redirect()->back()->with('success', 'File peta berhasil dihapus.');
+  }
+
+  public function replace($id)
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+    $petaModel = new KegiatanWilkerstatPetaModel();
+    $file = $petaModel->find($id);
+    if (!$file) return redirect()->back()->with('error', 'File tidak ditemukan.');
+    $newFile = $this->request->getFile('replace_file');
+    $allowed = ['image/jpeg', 'image/png'];
+    if (!$newFile->isValid() || !in_array($newFile->getMimeType(), $allowed)) {
+      return redirect()->back()->with('error', 'File tidak valid. Hanya JPG/PNG yang diizinkan.');
+    }
+    // Hapus file lama
+    if ($file['file_path'] && file_exists(WRITEPATH . 'uploads/' . $file['file_path'])) {
+      unlink(WRITEPATH . 'uploads/' . $file['file_path']);
+    }
+    // Upload file baru
+    $newName = uniqid() . '.' . $newFile->getExtension();
+    $newFile->move(WRITEPATH . 'uploads', $newName);
+    // Update database
+    $petaModel->update($id, [
+      'file_path' => $newName,
+      'nama_file' => $newFile->getClientName(),
+      'uploaded_at' => date('Y-m-d H:i:s'),
+      'uploader' => session('username'),
+    ]);
+    return redirect()->back()->with('success', 'File berhasil diganti.');
+  }
+
+  public function rename($id)
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+    $petaModel = new KegiatanWilkerstatPetaModel();
+    $file = $petaModel->find($id);
+    if (!$file) return redirect()->back()->with('error', 'File tidak ditemukan.');
+    $newNama = $this->request->getPost('new_nama_file');
+    if (!$newNama || trim($newNama) === '') {
+      return redirect()->back()->with('error', 'Nama file tidak boleh kosong.');
+    }
+    // Rename file fisik di server
+    $oldPath = WRITEPATH . 'uploads/' . $file['file_path'];
+    $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
+    $newNamaServer = pathinfo($newNama, PATHINFO_FILENAME) . '.' . $ext;
+    $newPath = WRITEPATH . 'uploads/' . $newNamaServer;
+    if (file_exists($oldPath)) {
+      if (!rename($oldPath, $newPath)) {
+        return redirect()->back()->with('error', 'Gagal mengganti nama file di server.');
+      }
+    }
+    $petaModel->update($id, ['nama_file' => $newNama, 'file_path' => $newNamaServer]);
+    return redirect()->back()->with('success', 'Nama file berhasil diubah.');
   }
 }

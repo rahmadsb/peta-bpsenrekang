@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::loginPost');
 $routes->get('logout', 'AuthController::logout');
+$routes->get('/', 'Dashboard::index');
 $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->get('/', 'Dashboard::admin');
   $routes->get('admin', 'Dashboard::admin');
@@ -53,6 +54,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->post('kelola-peta-wilkerstat/upload', 'KelolaPetaWilkerstatController::upload');
   $routes->get('kelola-peta-wilkerstat/download/(:num)', 'KelolaPetaWilkerstatController::download/$1');
   $routes->post('kelola-peta-wilkerstat/delete/(:num)', 'KelolaPetaWilkerstatController::delete/$1');
+  $routes->post('kelola-peta-wilkerstat/replace/(:num)', 'KelolaPetaWilkerstatController::replace/$1');
+  $routes->post('kelola-peta-wilkerstat/rename/(:num)', 'KelolaPetaWilkerstatController::rename/$1');
 });
 
 $routes->get('kegiatan-option', 'KegiatanOptionController::index');
@@ -77,3 +80,6 @@ $routes->get('preview-peta/(:any)', function ($filename) {
   readfile($path);
   exit;
 });
+
+$routes->get('subject-matter', 'Dashboard::subjectMatter');
+$routes->get('guest', 'Dashboard::guest');

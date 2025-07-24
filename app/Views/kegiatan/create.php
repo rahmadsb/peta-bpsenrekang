@@ -70,13 +70,18 @@
     </ul>
     <div class="tab-content mt-3" id="wilkerstatTabContent">
       <div class="tab-pane fade show active" id="blok-sensus" role="tabpanel">
-        <input type="text" class="form-control mb-2 search-bs" placeholder="Cari blok sensus...">
+        <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-blok-sensus">Pilih Semua</button>
+        <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-blok-sensus">Uncheck Semua</button>
+        <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
+        <span class="badge badge-info ml-2 count-selected" id="count-blok-sensus">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-blok-sensus">
           <thead>
             <tr>
               <th class="dt-checkbox"></th>
-              <th>Kode</th>
-              <th>Nama</th>
+              <th>Kode Blok Sensus</th>
+              <th>Nama Kecamatan</th>
+              <th>Nama Desa</th>
+              <th>Nama SLS</th>
             </tr>
           </thead>
           <tbody>
@@ -84,6 +89,8 @@
               <tr>
                 <td class="dt-checkbox"><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs"></td>
                 <td><?= esc($bs['kode_bs']) ?></td>
+                <td><?= esc($bs['nama_kecamatan']) ?></td>
+                <td><?= esc($bs['nama_desa']) ?></td>
                 <td><?= esc($bs['nama_sls']) ?></td>
               </tr>
             <?php endforeach; ?>
@@ -91,13 +98,18 @@
         </table>
       </div>
       <div class="tab-pane fade" id="sls" role="tabpanel">
-        <input type="text" class="form-control mb-2 search-sls" placeholder="Cari SLS...">
+        <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-sls">Pilih Semua</button>
+        <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-sls">Uncheck Semua</button>
+        <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
+        <span class="badge badge-info ml-2 count-selected" id="count-sls">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-sls">
           <thead>
             <tr>
               <th class="dt-checkbox"></th>
-              <th>Kode</th>
-              <th>Nama</th>
+              <th>Kode SLS</th>
+              <th>Nama Kecamatan</th>
+              <th>Nama Desa</th>
+              <th>Nama SLS</th>
             </tr>
           </thead>
           <tbody>
@@ -105,6 +117,8 @@
               <tr>
                 <td class="dt-checkbox"><input type="checkbox" name="sls[]" value="<?= $sls['uuid'] ?>" class="cb-sls"></td>
                 <td><?= esc($sls['kode_sls']) ?></td>
+                <td><?= esc($sls['nama_kecamatan']) ?></td>
+                <td><?= esc($sls['nama_desa']) ?></td>
                 <td><?= esc($sls['nama_sls']) ?></td>
               </tr>
             <?php endforeach; ?>
@@ -112,13 +126,17 @@
         </table>
       </div>
       <div class="tab-pane fade" id="desa" role="tabpanel">
-        <input type="text" class="form-control mb-2 search-desa" placeholder="Cari desa...">
+        <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-desa">Pilih Semua</button>
+        <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-desa">Uncheck Semua</button>
+        <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
+        <span class="badge badge-info ml-2 count-selected" id="count-desa">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-desa">
           <thead>
             <tr>
               <th class="dt-checkbox"></th>
-              <th>Kode</th>
-              <th>Nama</th>
+              <th>Kode Desa</th>
+              <th>Nama Kecamatan</th>
+              <th>Nama Desa</th>
             </tr>
           </thead>
           <tbody>
@@ -126,6 +144,7 @@
               <tr>
                 <td class="dt-checkbox"><input type="checkbox" name="desa[]" value="<?= $desa['uuid'] ?>" class="cb-desa"></td>
                 <td><?= esc($desa['kode_desa']) ?></td>
+                <td><?= esc($desa['nama_kecamatan']) ?></td>
                 <td><?= esc($desa['nama_desa']) ?></td>
               </tr>
             <?php endforeach; ?>
@@ -190,27 +209,6 @@
   });
 </script>
 <script>
-  // Search global
-  $('.search-bs').on('keyup', function() {
-    var val = $(this).val().toLowerCase();
-    $('#table-blok-sensus tbody tr').filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
-    });
-  });
-  $('.search-sls').on('keyup', function() {
-    var val = $(this).val().toLowerCase();
-    $('#table-sls tbody tr').filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
-    });
-  });
-  $('.search-desa').on('keyup', function() {
-    var val = $(this).val().toLowerCase();
-    $('#table-desa tbody tr').filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1)
-    });
-  });
-</script>
-<script>
   $(function() {
     $('#tanggal_batas_cetak').daterangepicker({
       singleDatePicker: true,
@@ -222,19 +220,163 @@
   });
 </script>
 <script>
-  $('form').on('submit', function(e) {
-    ['blok-sensus', 'sls', 'desa'].forEach(function(type) {
-      var table = $('#table-' + type).DataTable();
-      var checked = table.$('input[type=checkbox]:checked').map(function() {
-        return $(this).val();
-      }).get();
-      // Hapus input hidden sebelumnya
-      $('input[name="' + type.replace('-', '_') + '[]"][type=hidden]').remove();
-      // Kirim hanya value unik
-      $.each($.unique(checked), function(i, val) {
+  $(function() {
+    // Array manual untuk menyimpan pilihan user
+    var selectedBlokSensus = [];
+    var selectedSls = [];
+    var selectedDesa = [];
+
+    var tableIds = [{
+        type: 'blok-sensus',
+        arr: selectedBlokSensus,
+        badge: '#count-blok-sensus'
+      },
+      {
+        type: 'sls',
+        arr: selectedSls,
+        badge: '#count-sls'
+      },
+      {
+        type: 'desa',
+        arr: selectedDesa,
+        badge: '#count-desa'
+      }
+    ];
+
+    tableIds.forEach(function(obj) {
+      var tableId = '#table-' + obj.type;
+      var badgeId = obj.badge;
+      // Gunakan array global by reference
+      var getArr = function() {
+        if (obj.type === 'blok-sensus') return selectedBlokSensus;
+        if (obj.type === 'sls') return selectedSls;
+        if (obj.type === 'desa') return selectedDesa;
+      };
+      var setArr = function(newArr) {
+        if (obj.type === 'blok-sensus') selectedBlokSensus = newArr;
+        if (obj.type === 'sls') selectedSls = newArr;
+        if (obj.type === 'desa') selectedDesa = newArr;
+      };
+      // Inisialisasi DataTable
+      var dt;
+      if (!$.fn.DataTable.isDataTable(tableId)) {
+        dt = $(tableId).DataTable({
+          paging: true,
+          searching: true,
+          ordering: true,
+          info: false,
+          lengthMenu: [10, 25, 50, 100],
+          columnDefs: [{
+            orderable: false,
+            targets: 0
+          }]
+        });
+      } else {
+        dt = $(tableId).DataTable();
+      }
+      // Update badge
+      function updateCount() {
+        $(badgeId).text(getArr().length + ' terpilih');
+      }
+      // Checkbox change handler
+      $(tableId).on('change', 'input[type=checkbox]', function() {
+        var arr = getArr();
+        var val = $(this).val();
+        if (this.checked) {
+          if (!arr.includes(val)) arr.push(val);
+        } else {
+          var idx = arr.indexOf(val);
+          if (idx !== -1) arr.splice(idx, 1);
+        }
+        setArr(arr);
+        updateCount();
+      });
+      // Pilih Semua tombol (hanya data yang tampil di halaman aktif, hapus dulu dari array)
+      $('.btn-select-all[data-table="table-' + obj.type + '"]').on('click', function() {
+        var arr = getArr();
+        // Ambil semua value di halaman aktif
+        var currentPageVals = [];
+        dt.rows({
+          search: 'applied',
+          page: 'current'
+        }).nodes().to$().find('input[type=checkbox]').each(function() {
+          currentPageVals.push($(this).val());
+        });
+        // Hapus dari array semua value yang ada di halaman aktif
+        arr = arr.filter(function(val) {
+          return !currentPageVals.includes(val);
+        });
+        // Tambahkan semua value di halaman aktif ke array
+        currentPageVals.forEach(function(val) {
+          arr.push(val);
+        });
+        // Set checked
+        dt.rows({
+          search: 'applied',
+          page: 'current'
+        }).nodes().to$().find('input[type=checkbox]').prop('checked', true);
+        setArr(arr);
+        updateCount();
+      });
+      // Uncheck Semua tombol (hanya data yang tampil di halaman aktif, hapus dari array)
+      $('.btn-unselect-all[data-table="table-' + obj.type + '"]').on('click', function() {
+        var arr = getArr();
+        var currentPageVals = [];
+        dt.rows({
+          search: 'applied',
+          page: 'current'
+        }).nodes().to$().find('input[type=checkbox]').each(function() {
+          currentPageVals.push($(this).val());
+          this.checked = false;
+        });
+        // Hapus dari array semua value yang ada di halaman aktif
+        arr = arr.filter(function(val) {
+          return !currentPageVals.includes(val);
+        });
+        setArr(arr);
+        updateCount();
+      });
+      // Saat draw ulang, set status checked sesuai array
+      dt.on('draw', function() {
+        var arr = getArr();
+        dt.rows().nodes().to$().find('input[type=checkbox]').each(function() {
+          this.checked = arr.includes($(this).val());
+        });
+        updateCount();
+      });
+      // Inisialisasi awal
+      var arr = getArr();
+      dt.rows().nodes().to$().find('input[type=checkbox]').each(function() {
+        this.checked = arr.includes($(this).val());
+      });
+      updateCount();
+    });
+
+    // Submit: hanya kirim value dari array manual
+    $('form').on('submit', function(e) {
+      // Hapus input hidden lama
+      $('input[name="blok_sensus[]"][type=hidden]').remove();
+      $('input[name="sls[]"][type=hidden]').remove();
+      $('input[name="desa[]"][type=hidden]').remove();
+      // Tambahkan input hidden sesuai array
+      selectedBlokSensus.forEach(function(val) {
         $('<input>').attr({
           type: 'hidden',
-          name: type.replace('-', '_') + '[]',
+          name: 'blok_sensus[]',
+          value: val
+        }).appendTo('form');
+      });
+      selectedSls.forEach(function(val) {
+        $('<input>').attr({
+          type: 'hidden',
+          name: 'sls[]',
+          value: val
+        }).appendTo('form');
+      });
+      selectedDesa.forEach(function(val) {
+        $('<input>').attr({
+          type: 'hidden',
+          name: 'desa[]',
           value: val
         }).appendTo('form');
       });

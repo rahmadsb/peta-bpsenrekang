@@ -83,3 +83,4 @@ $routes->get('preview-peta/(:any)', function ($filename) {
 
 $routes->get('subject-matter', 'Dashboard::subjectMatter');
 $routes->get('guest', 'Dashboard::guest');
+$routes->post('import-wilkerstat', 'ImportWilkerstatController::importWilkerstat');

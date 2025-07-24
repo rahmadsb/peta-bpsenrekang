@@ -62,6 +62,16 @@
         </div>
       <?php endif; ?>
     </div>
+    <!-- Tombol download template dan upload file import wilkerstat -->
+    <div class="mb-3">
+      <a href="<?= base_url('public/contoh_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>Download Template Import Wilkerstat</a>
+      <form id="form-import-wilkerstat" action="" method="post" enctype="multipart/form-data" style="display:inline-block; margin-left:10px;">
+        <label for="file_import_wilkerstat" class="btn btn-info btn-sm mb-0">Import Wilkerstat dari Excel</label>
+        <input type="file" name="file_import_wilkerstat" id="file_import_wilkerstat" accept=".xlsx,.xls" style="display:none;">
+      </form>
+      <div id="import-wilkerstat-error" class="text-danger mt-2" style="display:none;"></div>
+    </div>
+
     <h4>Pilih Wilkerstat untuk Kegiatan Ini</h4>
     <ul class="nav nav-tabs" id="wilkerstatTab" role="tablist">
       <li class="nav-item">
@@ -410,6 +420,58 @@
           value: val
         }).appendTo('form');
       });
+    });
+  });
+</script>
+<script>
+  $(function() {
+    $('#file_import_wilkerstat').on('change', function(e) {
+      var file = this.files[0];
+      if (!file) return;
+      var formData = new FormData();
+      formData.append('file_import_wilkerstat', file);
+      $('#import-wilkerstat-error').hide().text('');
+      $.ajax({
+        url: baseUrl + 'import-wilkerstat',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+          if (res.status === 'error') {
+            var msg = res.message || (res.errors ? res.errors.join('<br>') : 'Import gagal');
+            $('#import-wilkerstat-error').html(msg).show();
+            return;
+          }
+          // Update array pilihan dan checkbox DataTables
+          var data = res.data;
+          // Blok Sensus
+          if (typeof selectedBlokSensus !== 'undefined') selectedBlokSensus = data.blok_sensus || [];
+          $('#table-blok-sensus input[type=checkbox]').each(function() {
+            this.checked = selectedBlokSensus.includes($(this).val());
+          });
+          // SLS
+          if (typeof selectedSls !== 'undefined') selectedSls = data.sls || [];
+          $('#table-sls input[type=checkbox]').each(function() {
+            this.checked = selectedSls.includes($(this).val());
+          });
+          // Desa
+          if (typeof selectedDesa !== 'undefined') selectedDesa = data.desa || [];
+          $('#table-desa input[type=checkbox]').each(function() {
+            this.checked = selectedDesa.includes($(this).val());
+          });
+          // Update badge
+          $('#count-blok-sensus').text(selectedBlokSensus.length + ' terpilih');
+          $('#count-sls').text(selectedSls.length + ' terpilih');
+          $('#count-desa').text(selectedDesa.length + ' terpilih');
+          Swal.fire('Berhasil', 'Import wilkerstat berhasil, pilihan sudah diperbarui.', 'success');
+        },
+        error: function(xhr) {
+          $('#import-wilkerstat-error').text('Terjadi error saat upload.').show();
+        }
+      });
+      // Reset input agar bisa upload file yang sama lagi
+      $(this).val('');
     });
   });
 </script>

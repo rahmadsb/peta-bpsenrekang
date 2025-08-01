@@ -30,6 +30,9 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
   <!-- SweetAlert2 -->
   <link rel="stylesheet" href="<?= base_url('plugins/sweetalert2/sweetalert2.min.css') ?>">
+  <!-- Date Range Picker -->
+  <link rel="stylesheet" href="<?= base_url('plugins/daterangepicker/daterangepicker.css') ?>">
+
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">

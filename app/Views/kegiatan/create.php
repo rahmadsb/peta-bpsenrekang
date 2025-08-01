@@ -165,10 +165,6 @@
     <a href="<?= base_url('kegiatan') ?>" class="btn btn-secondary">Batal</a>
   </form>
 </div>
-<!-- Date Range Picker -->
-<link rel="stylesheet" href="<?= base_url('plugins/daterangepicker/daterangepicker.css') ?>">
-<script src="<?= base_url('plugins/moment/moment.min.js') ?>"></script>
-<script src="<?= base_url('plugins/daterangepicker/daterangepicker.js') ?>"></script>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>
 <!-- jQuery UI 1.11.4 -->
@@ -189,8 +185,8 @@
 <!-- jQuery Knob Chart -->
 <script src=<?= base_url("plugins/jquery-knob/jquery.knob.min.js") ?>></script>
 <!-- daterangepicker -->
-<script src=<?= base_url("plugins/moment/moment.min.js") ?>></script>
-<script src=<?= base_url("plugins/daterangepicker/daterangepicker.js") ?>></script>
+<script src="<?= base_url('plugins/moment/moment.min.js') ?>"></script>
+<script src="<?= base_url('plugins/daterangepicker/daterangepicker.js') ?>"></script>
 <!-- Tempusdominus Bootstrap 4 -->
 <script src=<?= base_url("plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js") ?>></script>
 <!-- Summernote -->

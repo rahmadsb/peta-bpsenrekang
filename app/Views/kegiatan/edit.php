@@ -65,10 +65,10 @@
     <!-- Tombol download template dan upload file import wilkerstat -->
     <div class="mb-3">
       <a href="<?= base_url('public/contoh_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>Download Template Import Wilkerstat</a>
-      <form id="form-import-wilkerstat" action="" method="post" enctype="multipart/form-data" style="display:inline-block; margin-left:10px;">
+      <div class="d-inline-block ms-2">
         <label for="file_import_wilkerstat" class="btn btn-info btn-sm mb-0">Import Wilkerstat dari Excel</label>
         <input type="file" name="file_import_wilkerstat" id="file_import_wilkerstat" accept=".xlsx,.xls" style="display:none;">
-      </form>
+      </div>
       <div id="import-wilkerstat-error" class="text-danger mt-2" style="display:none;"></div>
     </div>
 
@@ -277,7 +277,6 @@
         badge: '#count-desa'
       }
     ];
-
     tableIds.forEach(function(obj) {
       var tableId = '#table-' + obj.type;
       var badgeId = obj.badge;
@@ -391,35 +390,40 @@
 
     // Submit: hanya kirim value dari array manual (pastikan unik)
     $('form').on('submit', function(e) {
-      selectedBlokSensus = [...new Set(selectedBlokSensus)];
-      selectedSls = [...new Set(selectedSls)];
-      selectedDesa = [...new Set(selectedDesa)];
-      // Hapus input hidden lama
-      $('input[name="blok_sensus[]"][type=hidden]').remove();
-      $('input[name="sls[]"][type=hidden]').remove();
-      $('input[name="desa[]"][type=hidden]').remove();
-      // Tambahkan input hidden sesuai array
-      selectedBlokSensus.forEach(function(val) {
-        $('<input>').attr({
-          type: 'hidden',
-          name: 'blok_sensus[]',
-          value: val
-        }).appendTo('form');
-      });
-      selectedSls.forEach(function(val) {
-        $('<input>').attr({
-          type: 'hidden',
-          name: 'sls[]',
-          value: val
-        }).appendTo('form');
-      });
-      selectedDesa.forEach(function(val) {
-        $('<input>').attr({
-          type: 'hidden',
-          name: 'desa[]',
-          value: val
-        }).appendTo('form');
-      });
+      try {
+        selectedBlokSensus = [...new Set(selectedBlokSensus)];
+        selectedSls = [...new Set(selectedSls)];
+        selectedDesa = [...new Set(selectedDesa)];
+        // Hapus input hidden lama
+        $('input[name="blok_sensus[]"][type=hidden]').remove();
+        $('input[name="sls[]"][type=hidden]').remove();
+        $('input[name="desa[]"][type=hidden]').remove();
+        // Tambahkan input hidden sesuai array
+        selectedBlokSensus.forEach(function(val) {
+          $('<input>').attr({
+            type: 'hidden',
+            name: 'blok_sensus[]',
+            value: val
+          }).appendTo('form');
+        });
+        selectedSls.forEach(function(val) {
+          $('<input>').attr({
+            type: 'hidden',
+            name: 'sls[]',
+            value: val
+          }).appendTo('form');
+        });
+        selectedDesa.forEach(function(val) {
+          $('<input>').attr({
+            type: 'hidden',
+            name: 'desa[]',
+            value: val
+          }).appendTo('form');
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        e.preventDefault();
+      }
     });
   });
 </script>

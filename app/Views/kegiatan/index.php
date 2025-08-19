@@ -19,16 +19,16 @@
     <tbody>
       <?php foreach ($kegiatan as $item): ?>
         <tr>
-          <td><?= esc($opsiMap[$item['kode_kegiatan_option']] ?? '-') ?></td>
+          <td><?= esc($opsiMap[$item['id_opsi_kegiatan']] ?? '-') ?></td>
           <td><?= esc($item['tahun']) ?></td>
           <td><?= esc($item['bulan']) ?></td>
           <td><?= esc($item['tanggal_batas_cetak']) ?></td>
           <td><?= esc($item['status']) ?></td>
           <?php if ($canManage): ?>
             <td>
-              <a href="<?= base_url('kegiatan/edit/' . $item['uuid']) ?>" class="btn btn-sm btn-warning">Edit</a>
-              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['uuid']) ?>" class="btn btn-sm btn-info">Kelola Peta Wilkerstat</a>
-              <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('kegiatan/delete/' . $item['uuid']) ?>">Hapus</a>
+              <a href="<?= base_url('kegiatan/edit/' . $item['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
+              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['id']) ?>" class="btn btn-sm btn-info">Kelola Peta Wilkerstat</a>
+              <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('kegiatan/delete/' . $item['id']) ?>">Hapus</a>
             </td>
           <?php endif; ?>
         </tr>

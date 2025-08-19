@@ -8,6 +8,6 @@ class KegiatanSlsModel extends Model
 {
   protected $table = 'kegiatan_sls';
   protected $primaryKey = 'id';
-  protected $allowedFields = ['kegiatan_uuid', 'sls_uuid'];
+  protected $allowedFields = ['id', 'id_kegiatan', 'id_sls'];
   public $timestamps = false;
 }

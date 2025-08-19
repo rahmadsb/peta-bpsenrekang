@@ -2,7 +2,7 @@
 <?php $this->section('content'); ?>
 <div class="container-fluid">
   <h1>Edit Blok Sensus</h1>
-  <form id="form-edit-blok-sensus" action="<?= base_url('blok-sensus/update/' . $blok['uuid']) ?>" method="post">
+  <form id="form-edit-blok-sensus" action="<?= base_url('blok-sensus/update/' . $blok['id']) ?>" method="post">
     <div class="form-group">
       <label>Kode BS</label>
       <input type="text" name="kode_bs" class="form-control" value="<?= esc($blok['kode_bs']) ?>" required>

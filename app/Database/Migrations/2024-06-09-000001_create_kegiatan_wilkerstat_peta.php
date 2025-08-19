@@ -10,12 +10,12 @@ class CreateKegiatanWilkerstatPeta extends Migration
   {
     $this->forge->addField([
       'id' => [
-        'type' => 'INT',
-        'constraint' => 11,
-        'unsigned' => true,
-        'auto_increment' => true,
+        'type' => 'CHAR',
+        'constraint' => 36,
+        'null' => false,
+        'unique' => true,
       ],
-      'kegiatan_uuid' => [
+      'id_kegiatan' => [
         'type' => 'CHAR',
         'constraint' => 36,
       ],
@@ -23,7 +23,7 @@ class CreateKegiatanWilkerstatPeta extends Migration
         'type' => 'ENUM',
         'constraint' => ['blok_sensus', 'sls', 'desa'],
       ],
-      'wilkerstat_uuid' => [
+      'id_wilkerstat' => [
         'type' => 'CHAR',
         'constraint' => 36,
       ],
@@ -31,10 +31,9 @@ class CreateKegiatanWilkerstatPeta extends Migration
         'type' => 'ENUM',
         'constraint' => ['dengan_titik', 'tanpa_titik'],
       ],
-      'parent_peta_id' => [
-        'type' => 'INT',
-        'constraint' => 11,
-        'unsigned' => true,
+      'id_parent_peta' => [
+        'type' => 'CHAR',
+        'constraint' => 36,
         'null' => true,
       ],
       'file_path' => [
@@ -54,8 +53,18 @@ class CreateKegiatanWilkerstatPeta extends Migration
         'constraint' => 50,
         'null' => true,
       ],
+      'created_at' => [
+        'type' => 'DATETIME',
+        'null' => true,
+      ],
+      'updated_at' => [
+        'type' => 'DATETIME',
+        'null' => true,
+      ],
     ]);
     $this->forge->addKey('id', true);
+    $this->forge->addForeignKey('id_kegiatan', 'kegiatan', 'id', 'CASCADE', 'CASCADE');
+    $this->forge->addForeignKey('id_parent_peta', 'kegiatan_wilkerstat_peta', 'id', 'CASCADE', 'CASCADE');
     $this->forge->createTable('kegiatan_wilkerstat_peta');
   }
 

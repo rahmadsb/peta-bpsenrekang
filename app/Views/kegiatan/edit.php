@@ -2,18 +2,18 @@
 <?= $this->section('content') ?>
 <div class="container mt-4">
   <h2>Edit Kegiatan</h2>
-  <form action="<?= base_url('kegiatan/update/' . $kegiatan['uuid']) ?>" method="post">
+  <form action="<?= base_url('kegiatan/update/' . $kegiatan['id']) ?>" method="post">
     <div class="mb-3">
-      <label for="kode_kegiatan_option" class="form-label">Opsi Kegiatan</label>
-      <select class="form-control<?= isset($validation) && $validation->hasError('kode_kegiatan_option') ? ' is-invalid' : '' ?>" id="kode_kegiatan_option" name="kode_kegiatan_option" required>
+      <label for="id_opsi_kegiatan" class="form-label">Opsi Kegiatan</label>
+      <select class="form-control<?= isset($validation) && $validation->hasError('id_opsi_kegiatan') ? ' is-invalid' : '' ?>" id="id_opsi_kegiatan" name="id_opsi_kegiatan" required>
         <option value="">Pilih Opsi Kegiatan</option>
         <?php foreach ($opsi as $o): ?>
-          <option value="<?= $o['uuid'] ?>" <?= old('kode_kegiatan_option', $kegiatan['kode_kegiatan_option']) == $o['uuid'] ? 'selected' : '' ?>><?= esc($o['nama_kegiatan']) ?></option>
+          <option value="<?= $o['id'] ?>" <?= old('id_opsi_kegiatan', $kegiatan['id_opsi_kegiatan']) == $o['id'] ? 'selected' : '' ?>><?= esc($o['nama_kegiatan']) ?></option>
         <?php endforeach; ?>
       </select>
-      <?php if (isset($validation) && $validation->hasError('kode_kegiatan_option')): ?>
+      <?php if (isset($validation) && $validation->hasError('id_opsi_kegiatan')): ?>
         <div class="invalid-feedback">
-          <?= $validation->getError('kode_kegiatan_option') ?>
+          <?= $validation->getError('id_opsi_kegiatan') ?>
         </div>
       <?php endif; ?>
     </div>
@@ -103,7 +103,7 @@
           <tbody>
             <?php foreach ($blokSensusList as $bs): ?>
               <tr>
-                <td class="dt-checkbox"><input type="checkbox" name="blok_sensus[]" value="<?= $bs['uuid'] ?>" class="cb-bs" <?= in_array($bs['uuid'], $selectedBlokSensus ?? []) ? 'checked' : '' ?>></td>
+                <td class="dt-checkbox"><input type="checkbox" name="blok_sensus[]" value="<?= $bs['id'] ?>" class="cb-bs" <?= in_array($bs['id'], $selectedBlokSensus ?? []) ? 'checked' : '' ?>></td>
                 <td><?= esc($bs['kode_bs']) ?></td>
                 <td><?= esc($bs['nama_sls']) ?></td>
                 <td><?= esc($bs['nama_kecamatan']) ?></td>
@@ -131,7 +131,7 @@
           <tbody>
             <?php foreach ($slsList as $sls): ?>
               <tr>
-                <td class="dt-checkbox"><input type="checkbox" name="sls[]" value="<?= $sls['uuid'] ?>" class="cb-sls" <?= in_array($sls['uuid'], $selectedSls ?? []) ? 'checked' : '' ?>></td>
+                <td class="dt-checkbox"><input type="checkbox" name="sls[]" value="<?= $sls['id'] ?>" class="cb-sls" <?= in_array($sls['id'], $selectedSls ?? []) ? 'checked' : '' ?>></td>
                 <td><?= esc($sls['kode_sls']) ?></td>
                 <td><?= esc($sls['nama_sls']) ?></td>
                 <td><?= esc($sls['nama_kecamatan']) ?></td>
@@ -158,7 +158,7 @@
           <tbody>
             <?php foreach ($desaList as $desa): ?>
               <tr>
-                <td class="dt-checkbox"><input type="checkbox" name="desa[]" value="<?= $desa['uuid'] ?>" class="cb-desa" <?= in_array($desa['uuid'], $selectedDesa ?? []) ? 'checked' : '' ?>></td>
+                <td class="dt-checkbox"><input type="checkbox" name="desa[]" value="<?= $desa['id'] ?>" class="cb-desa" <?= in_array($desa['id'], $selectedDesa ?? []) ? 'checked' : '' ?>></td>
                 <td><?= esc($desa['kode_desa']) ?></td>
                 <td><?= esc($desa['nama_desa']) ?></td>
                 <td><?= esc($desa['nama_kecamatan']) ?></td>

@@ -23,7 +23,7 @@ class BlokSensusSeeder extends Seeder
       // Map kolom sesuai header
       $rowAssoc = array_combine($header, $row);
       $data[] = [
-        'uuid' => Uuid::uuid4()->toString(),
+        'id' => Uuid::uuid4()->toString(),
         'kode_bs' => $rowAssoc['idbs'],
         'nama_bs' => $rowAssoc['kdbs'],
         'luas' => $rowAssoc['luas'],

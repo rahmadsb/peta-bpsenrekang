@@ -28,9 +28,9 @@
           <td><?= esc($row['nama_kabupaten']) ?></td>
           <td><?= esc($row['nama_provinsi']) ?></td>
           <td>
-            <a href="<?= base_url('desa/detail/' . $row['uuid']) ?>" class="btn btn-info btn-sm">Detail</a>
-            <a href="<?= base_url('desa/edit/' . $row['uuid']) ?>" class="btn btn-warning btn-sm">Edit</a>
-            <form action="<?= base_url('desa/delete/' . $row['uuid']) ?>" method="post" class="d-inline delete-form">
+            <a href="<?= base_url('desa/detail/' . $row['id']) ?>" class="btn btn-info btn-sm">Detail</a>
+            <a href="<?= base_url('desa/edit/' . $row['id']) ?>" class="btn btn-warning btn-sm">Edit</a>
+            <form action="<?= base_url('desa/delete/' . $row['id']) ?>" method="post" class="d-inline delete-form">
               <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
             </form>
           </td>

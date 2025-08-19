@@ -4,7 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\KegiatanModel;
-use App\Models\KegiatanOptionModel;
+use App\Models\OpsiKegiatanModel;
+use App\Models\UserModel;
 use Ramsey\Uuid\Uuid;
 use App\Models\KegiatanBlokSensusModel;
 use App\Models\KegiatanSlsModel;
@@ -39,12 +40,12 @@ class KegiatanController extends BaseController
   public function index()
   {
     $model = new KegiatanModel();
-    $optionModel = new KegiatanOptionModel();
+    $optionModel = new OpsiKegiatanModel();
     $data['kegiatan'] = $model->findAll();
     $opsi = $optionModel->findAll();
     $opsiMap = [];
     foreach ($opsi as $o) {
-      $opsiMap[$o['uuid']] = $o['nama_kegiatan'];
+      $opsiMap[$o['id']] = $o['nama_kegiatan'];
     }
     $data['opsiMap'] = $opsiMap;
     $data['canManage'] = $this->canManage();
@@ -56,7 +57,7 @@ class KegiatanController extends BaseController
   public function create()
   {
     if (!$this->canManage()) return redirect()->to('/kegiatan');
-    $optionModel = new KegiatanOptionModel();
+    $optionModel = new OpsiKegiatanModel();
     $data['opsi'] = $optionModel->findAll();
     $data['title'] = 'Tambah Kegiatan';
     $data['bulanList'] = $this->bulanList;
@@ -72,13 +73,13 @@ class KegiatanController extends BaseController
     if (!$this->canManage()) return redirect()->to('/kegiatan');
     $validation = \Config\Services::validation();
     $validation->setRules([
-      'kode_kegiatan_option' => 'required',
+      'id_opsi_kegiatan' => 'required',
       'tahun' => 'required|numeric',
       'bulan' => 'required',
       'tanggal_batas_cetak' => 'required',
     ]);
     if (!$validation->withRequest($this->request)->run()) {
-      $optionModel = new KegiatanOptionModel();
+      $optionModel = new OpsiKegiatanModel();
       $data['opsi'] = $optionModel->findAll();
       $data['validation'] = $validation;
       $data['bulanList'] = $this->bulanList;
@@ -87,15 +88,29 @@ class KegiatanController extends BaseController
       $data['desaList'] = (new DesaModel())->findAll();
       return view('kegiatan/create', $data);
     }
+
+    // Validate user_id exists
+    $userId = session('user_id');
+    if (!$userId) {
+      return redirect()->to('/login')->with('error', 'Session expired. Please login again.');
+    }
+
+    // Check if user exists in database
+    $userModel = new \App\Models\UserModel();
+    $user = $userModel->find($userId);
+    if (!$user) {
+      return redirect()->to('/login')->with('error', 'Invalid user session. Please login again.');
+    }
+
     $role = session('role');
     $status = 'disiapkan (IPDS)';
     if ($role === 'SUBJECT_MATTER') $status = 'digunakan (SM)';
     $model = new KegiatanModel();
     $uuid = Uuid::uuid4()->toString();
     $model->insert([
-      'uuid' => $uuid,
-      'kode_kegiatan_option' => $this->request->getPost('kode_kegiatan_option'),
-      'id_user' => session('user_id'),
+      'id' => $uuid,
+      'id_opsi_kegiatan' => $this->request->getPost('id_opsi_kegiatan'),
+      'id_user' => $userId,
       'tahun' => $this->request->getPost('tahun'),
       'bulan' => $this->request->getPost('bulan'),
       'tanggal_batas_cetak' => $this->request->getPost('tanggal_batas_cetak'),
@@ -106,13 +121,25 @@ class KegiatanController extends BaseController
     $slsModel = new KegiatanSlsModel();
     $desaModel = new KegiatanDesaModel();
     foreach (array_unique($this->request->getPost('blok_sensus') ?? []) as $bs) {
-      $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
+      $bsModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_blok_sensus' => $bs
+      ]);
     }
     foreach (array_unique($this->request->getPost('sls') ?? []) as $sls) {
-      $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
+      $slsModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_sls' => $sls
+      ]);
     }
     foreach (array_unique($this->request->getPost('desa') ?? []) as $desa) {
-      $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
+      $desaModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_desa' => $desa
+      ]);
     }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil ditambahkan');
   }
@@ -121,7 +148,7 @@ class KegiatanController extends BaseController
   {
     if (!$this->canManage()) return redirect()->to('/kegiatan');
     $model = new KegiatanModel();
-    $optionModel = new KegiatanOptionModel();
+    $optionModel = new OpsiKegiatanModel();
     $kegiatan = $model->find($uuid);
     if (!$kegiatan) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
     $data['kegiatan'] = $kegiatan;
@@ -138,9 +165,9 @@ class KegiatanController extends BaseController
     $data['blokSensusList'] = (new BlokSensusModel())->findAll();
     $data['slsList'] = (new SlsModel())->findAll();
     $data['desaList'] = (new DesaModel())->findAll();
-    $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('kegiatan_uuid', $uuid)->findAll(), 'blok_sensus_uuid');
-    $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('kegiatan_uuid', $uuid)->findAll(), 'sls_uuid');
-    $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('kegiatan_uuid', $uuid)->findAll(), 'desa_uuid');
+    $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('id_kegiatan', $uuid)->findAll(), 'id_blok_sensus');
+    $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('id_kegiatan', $uuid)->findAll(), 'id_sls');
+    $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('id_kegiatan', $uuid)->findAll(), 'id_desa');
     return view('kegiatan/edit', $data);
   }
 
@@ -149,7 +176,7 @@ class KegiatanController extends BaseController
     if (!$this->canManage()) return redirect()->to('/kegiatan');
     $validation = \Config\Services::validation();
     $validation->setRules([
-      'kode_kegiatan_option' => 'required',
+      'id_opsi_kegiatan' => 'required',
       'tahun' => 'required|numeric',
       'bulan' => 'required',
       'tanggal_batas_cetak' => 'required',
@@ -157,7 +184,7 @@ class KegiatanController extends BaseController
     ]);
     if (!$validation->withRequest($this->request)->run()) {
       $model = new KegiatanModel();
-      $optionModel = new KegiatanOptionModel();
+      $optionModel = new OpsiKegiatanModel();
       $kegiatan = $model->find($uuid);
       $data['kegiatan'] = $kegiatan;
       $data['opsi'] = $optionModel->findAll();
@@ -174,14 +201,14 @@ class KegiatanController extends BaseController
       $data['blokSensusList'] = (new BlokSensusModel())->findAll();
       $data['slsList'] = (new SlsModel())->findAll();
       $data['desaList'] = (new DesaModel())->findAll();
-      $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('kegiatan_uuid', $uuid)->findAll(), 'blok_sensus_uuid');
-      $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('kegiatan_uuid', $uuid)->findAll(), 'sls_uuid');
-      $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('kegiatan_uuid', $uuid)->findAll(), 'desa_uuid');
+      $data['selectedBlokSensus'] = array_column((new KegiatanBlokSensusModel())->where('id_kegiatan', $uuid)->findAll(), 'id_blok_sensus');
+      $data['selectedSls'] = array_column((new KegiatanSlsModel())->where('id_kegiatan', $uuid)->findAll(), 'id_sls');
+      $data['selectedDesa'] = array_column((new KegiatanDesaModel())->where('id_kegiatan', $uuid)->findAll(), 'id_desa');
       return view('kegiatan/edit', $data);
     }
     $model = new KegiatanModel();
     $model->update($uuid, [
-      'kode_kegiatan_option' => $this->request->getPost('kode_kegiatan_option'),
+      'id_opsi_kegiatan' => $this->request->getPost('id_opsi_kegiatan'),
       'tahun' => $this->request->getPost('tahun'),
       'bulan' => $this->request->getPost('bulan'),
       'tanggal_batas_cetak' => $this->request->getPost('tanggal_batas_cetak'),
@@ -191,17 +218,29 @@ class KegiatanController extends BaseController
     $bsModel = new KegiatanBlokSensusModel();
     $slsModel = new KegiatanSlsModel();
     $desaModel = new KegiatanDesaModel();
-    $bsModel->where('kegiatan_uuid', $uuid)->delete();
-    $slsModel->where('kegiatan_uuid', $uuid)->delete();
-    $desaModel->where('kegiatan_uuid', $uuid)->delete();
+    $bsModel->where('id_kegiatan', $uuid)->delete();
+    $slsModel->where('id_kegiatan', $uuid)->delete();
+    $desaModel->where('id_kegiatan', $uuid)->delete();
     foreach (array_unique($this->request->getPost('blok_sensus') ?? []) as $bs) {
-      $bsModel->insert(['kegiatan_uuid' => $uuid, 'blok_sensus_uuid' => $bs]);
+      $bsModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_blok_sensus' => $bs
+      ]);
     }
     foreach (array_unique($this->request->getPost('sls') ?? []) as $sls) {
-      $slsModel->insert(['kegiatan_uuid' => $uuid, 'sls_uuid' => $sls]);
+      $slsModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_sls' => $sls
+      ]);
     }
     foreach (array_unique($this->request->getPost('desa') ?? []) as $desa) {
-      $desaModel->insert(['kegiatan_uuid' => $uuid, 'desa_uuid' => $desa]);
+      $desaModel->insert([
+        'id' => Uuid::uuid4()->toString(),
+        'id_kegiatan' => $uuid,
+        'id_desa' => $desa
+      ]);
     }
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil diupdate');
   }

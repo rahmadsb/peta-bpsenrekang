@@ -42,7 +42,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="<?= base_url('kegiatan-option') ?>" class="nav-link<?= ($currentPath === '/kegiatan-option') ? ' active' : '' ?>">
+          <a href="<?= base_url('opsi-kegiatan') ?>" class="nav-link<?= ($currentPath === '/opsi-kegiatan') ? ' active' : '' ?>">
             <i class="nav-icon fas fa-tasks"></i>
             <p>Opsi Kegiatan</p>
           </a>

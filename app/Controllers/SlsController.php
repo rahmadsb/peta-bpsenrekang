@@ -7,6 +7,7 @@ use App\Models\SlsModel;
 use App\Models\KegiatanSlsModel;
 use App\Models\KegiatanModel;
 use App\Models\KegiatanWilkerstatPetaModel;
+use App\Models\OpsiKegiatanModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -155,25 +156,43 @@ class SlsController extends BaseController
     $slsModel = new SlsModel();
     $sls = $slsModel->find($uuid);
     if (!$sls) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-    $pivot = (new KegiatanSlsModel())->where('sls_uuid', $uuid)->findAll();
+    $pivot = (new KegiatanSlsModel())->where('id_sls', $uuid)->findAll();
     $kegiatanModel = new KegiatanModel();
     $petaModel = new KegiatanWilkerstatPetaModel();
     $kegiatanList = [];
     foreach ($pivot as $row) {
-      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      $kegiatan = $kegiatanModel->find($row['id_kegiatan']);
       if ($kegiatan) {
         $peta = $petaModel->where([
-          'kegiatan_uuid' => $kegiatan['uuid'],
+          'id_kegiatan' => $kegiatan['id'],
           'wilkerstat_type' => 'sls',
-          'wilkerstat_uuid' => $uuid
+          'id_wilkerstat' => $uuid
         ])->findAll();
         $kegiatan['peta'] = $peta;
         $kegiatanList[] = $kegiatan;
       }
     }
+
+    $daftarKegiatan = [];
+    $kegiatanOptionModel = new OpsiKegiatanModel();
+    foreach ($kegiatanList as $key => $value) {
+      $kegiatanOption = $kegiatanOptionModel->find($value['id_opsi_kegiatan']);
+      $daftarKegiatan[] = [
+        'nama_kegiatan' => $kegiatanOption['nama_kegiatan'] . ' ' . $value['tahun'] . ' ' . $value['bulan'],
+        'peta' => $value['peta'],
+        'tahun' => $value['tahun'],
+        'bulan' => $value['bulan'],
+        'status' => $value['status'],
+        'id_user' => $value['id_user'],
+        'uuid' => $value['id'],
+        'id_opsi_kegiatan' => $value['id_opsi_kegiatan'],
+        'nama_opsi_kegiatan' => $kegiatanOption['nama_kegiatan'],
+      ];
+    }
+
     $data = [
       'sls' => $sls,
-      'kegiatanList' => $kegiatanList,
+      'daftarKegiatan' => $daftarKegiatan,
       'title' => 'Detail SLS',
     ];
     return view('sls/detail', $data);

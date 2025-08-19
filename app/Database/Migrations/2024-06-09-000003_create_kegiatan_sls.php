@@ -10,21 +10,23 @@ class CreateKegiatanSls extends Migration
   {
     $this->forge->addField([
       'id' => [
-        'type' => 'INT',
-        'constraint' => 11,
-        'unsigned' => true,
-        'auto_increment' => true,
+        'type' => 'CHAR',
+        'constraint' => 36,
+        'null' => false,
+        'unique' => true,
       ],
-      'kegiatan_uuid' => [
+      'id_kegiatan' => [
         'type' => 'CHAR',
         'constraint' => 36,
       ],
-      'sls_uuid' => [
+      'id_sls' => [
         'type' => 'CHAR',
         'constraint' => 36,
       ],
     ]);
     $this->forge->addKey('id', true);
+    $this->forge->addForeignKey('id_kegiatan', 'kegiatan', 'id', 'CASCADE', 'CASCADE');
+    $this->forge->addForeignKey('id_sls', 'sls', 'id', 'CASCADE', 'CASCADE');
     $this->forge->createTable('kegiatan_sls');
   }
 

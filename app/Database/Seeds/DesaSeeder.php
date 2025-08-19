@@ -24,7 +24,7 @@ class DesaSeeder extends Seeder
       $kode_desa = $rowAssoc['idsls']; // Perbaikan: gunakan idsls sebagai kode_desa
       if (!isset($desaMap[$kode_desa])) {
         $desaMap[$kode_desa] = [
-          'uuid' => Uuid::uuid4()->toString(),
+          'id' => Uuid::uuid4()->toString(),
           'kode_desa' => $rowAssoc['idsls'],
           'nama_desa' => $rowAssoc['nmdesa'],
           'luas' => $rowAssoc['luas'],

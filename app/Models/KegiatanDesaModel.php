@@ -8,6 +8,6 @@ class KegiatanDesaModel extends Model
 {
   protected $table = 'kegiatan_desa';
   protected $primaryKey = 'id';
-  protected $allowedFields = ['kegiatan_uuid', 'desa_uuid'];
+  protected $allowedFields = ['id', 'id_kegiatan', 'id_desa'];
   public $timestamps = false;
 }

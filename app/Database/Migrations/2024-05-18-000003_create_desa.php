@@ -9,7 +9,7 @@ class CreateDesa extends Migration
   public function up()
   {
     $this->forge->addField([
-      'uuid' => [
+      'id' => [
         'type' => 'CHAR',
         'constraint' => 36,
         'null' => false,
@@ -61,7 +61,7 @@ class CreateDesa extends Migration
         'null' => true,
       ],
     ]);
-    $this->forge->addKey('uuid', true);
+    $this->forge->addKey('id', true);
     $this->forge->createTable('desa');
   }
 

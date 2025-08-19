@@ -2,7 +2,7 @@
 <?php $this->section('content'); ?>
 <div class="container-fluid">
   <h1>Edit Desa</h1>
-  <form id="form-edit-desa" action="<?= base_url('desa/update/' . $desa['uuid']) ?>" method="post">
+  <form id="form-edit-desa" action="<?= base_url('desa/update/' . $desa['id']) ?>" method="post">
     <div class="form-group">
       <label>Kode Desa</label>
       <input type="text" name="kode_desa" class="form-control" value="<?= esc($desa['kode_desa']) ?>" required>

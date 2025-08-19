@@ -58,12 +58,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->post('kelola-peta-wilkerstat/rename/(:num)', 'KelolaPetaWilkerstatController::rename/$1');
 });
 
-$routes->get('kegiatan-option', 'KegiatanOptionController::index');
-$routes->get('kegiatan-option/create', 'KegiatanOptionController::create');
-$routes->post('kegiatan-option/store', 'KegiatanOptionController::store');
-$routes->get('kegiatan-option/edit/(:segment)', 'KegiatanOptionController::edit/$1');
-$routes->post('kegiatan-option/update/(:segment)', 'KegiatanOptionController::update/$1');
-$routes->get('kegiatan-option/delete/(:segment)', 'KegiatanOptionController::delete/$1');
+$routes->get('opsi-kegiatan', 'OpsiKegiatanController::index');
+$routes->get('opsi-kegiatan/create', 'OpsiKegiatanController::create');
+$routes->post('opsi-kegiatan/store', 'OpsiKegiatanController::store');
+$routes->get('opsi-kegiatan/edit/(:segment)', 'OpsiKegiatanController::edit/$1');
+$routes->post('opsi-kegiatan/update/(:segment)', 'OpsiKegiatanController::update/$1');
+$routes->get('opsi-kegiatan/delete/(:segment)', 'OpsiKegiatanController::delete/$1');
 
 $routes->get('kegiatan', 'KegiatanController::index');
 $routes->get('kegiatan/create', 'KegiatanController::create');

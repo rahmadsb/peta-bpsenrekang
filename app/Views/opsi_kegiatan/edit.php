@@ -2,7 +2,7 @@
 <?= $this->section('content') ?>
 <div class="container mt-4">
   <h2>Edit Opsi Kegiatan</h2>
-  <form action="<?= base_url('kegiatan-option/update/' . $opsi['uuid']) ?>" method="post">
+  <form action="<?= base_url('opsi-kegiatan/update/' . $opsi['id']) ?>" method="post">
     <div class="mb-3">
       <label for="kode_kegiatan" class="form-label">Kode Kegiatan</label>
       <input type="text" class="form-control<?= isset($validation) && $validation->hasError('kode_kegiatan') ? ' is-invalid' : '' ?>" id="kode_kegiatan" name="kode_kegiatan" value="<?= old('kode_kegiatan', $opsi['kode_kegiatan']) ?>" required>
@@ -22,7 +22,7 @@
       <?php endif; ?>
     </div>
     <button type="submit" class="btn btn-primary">Update</button>
-    <a href="<?= base_url('kegiatan-option') ?>" class="btn btn-secondary">Batal</a>
+    <a href="<?= base_url('opsi-kegiatan') ?>" class="btn btn-secondary">Batal</a>
   </form>
 </div>
 <!-- jQuery -->

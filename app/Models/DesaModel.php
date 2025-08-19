@@ -7,9 +7,9 @@ use CodeIgniter\Model;
 class DesaModel extends Model
 {
   protected $table = 'desa';
-  protected $primaryKey = 'uuid';
+  protected $primaryKey = 'id';
   protected $allowedFields = [
-    'uuid',
+    'id',
     'kode_desa',
     'nama_desa',
     'luas',

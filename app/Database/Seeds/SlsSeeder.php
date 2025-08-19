@@ -22,7 +22,7 @@ class SlsSeeder extends Seeder
     foreach (array_slice($rows, 1) as $row) {
       $rowAssoc = array_combine($header, $row);
       $data[] = [
-        'uuid' => Uuid::uuid4()->toString(),
+        'id' => Uuid::uuid4()->toString(),
         'kode_sls' => $rowAssoc['idsls'],
         'luas' => $rowAssoc['luas'],
         'kode_kabupaten' => $rowAssoc['kdkab'],

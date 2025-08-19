@@ -7,9 +7,9 @@ use CodeIgniter\Model;
 class SlsModel extends Model
 {
   protected $table = 'sls';
-  protected $primaryKey = 'uuid';
+  protected $primaryKey = 'id';
   protected $allowedFields = [
-    'uuid',
+    'id',
     'kode_sls',
     'luas',
     'kode_kabupaten',

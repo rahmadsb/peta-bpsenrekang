@@ -7,7 +7,7 @@ use App\Models\BlokSensusModel;
 use App\Models\KegiatanBlokSensusModel;
 use App\Models\KegiatanModel;
 use App\Models\KegiatanWilkerstatPetaModel;
-use App\Models\KegiatanOptionModel;
+use App\Models\OpsiKegiatanModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -160,18 +160,18 @@ class BlokSensusController extends BaseController
     $blokModel = new BlokSensusModel();
     $blok = $blokModel->find($uuid);
     if (!$blok) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-    $pivot = (new KegiatanBlokSensusModel())->where('blok_sensus_uuid', $uuid)->findAll();
+    $pivot = (new KegiatanBlokSensusModel())->where('id_blok_sensus', $uuid)->findAll();
     $kegiatanModel = new KegiatanModel();
     $petaModel = new KegiatanWilkerstatPetaModel();
     $kegiatanList = [];
     foreach ($pivot as $row) {
-      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      $kegiatan = $kegiatanModel->find($row['id_kegiatan']);
       if ($kegiatan) {
         // Ambil file peta untuk blok sensus ini pada kegiatan ini
         $peta = $petaModel->where([
-          'kegiatan_uuid' => $kegiatan['uuid'],
+          'id_kegiatan' => $kegiatan['id'],
           'wilkerstat_type' => 'blok_sensus',
-          'wilkerstat_uuid' => $uuid
+          'id_wilkerstat' => $uuid
         ])->findAll();
         $kegiatan['peta'] = $peta;
         $kegiatanList[] = $kegiatan;
@@ -180,9 +180,9 @@ class BlokSensusController extends BaseController
 
     $daftarKegiatan = [];
 
-    $kegiatanOptionModel = new KegiatanOptionModel();
+    $kegiatanOptionModel = new OpsiKegiatanModel();
     foreach ($kegiatanList as $key => $value) {
-      $kegiatanOption = $kegiatanOptionModel->find($value['kode_kegiatan_option']);
+      $kegiatanOption = $kegiatanOptionModel->find($value['id_opsi_kegiatan']);
       $daftarKegiatan[] = [
         'nama_kegiatan' => $kegiatanOption['nama_kegiatan'] . ' ' . $value['tahun'] . ' ' . $value['bulan'],
         'peta' => $value['peta'],
@@ -190,12 +190,12 @@ class BlokSensusController extends BaseController
         'bulan' => $value['bulan'],
         'status' => $value['status'],
         'id_user' => $value['id_user'],
-        'uuid' => $value['uuid'],
-        'kode_kegiatan_option' => $value['kode_kegiatan_option'],
-        'nama_kegiatan_option' => $kegiatanOption['nama_kegiatan'],
+        'uuid' => $value['id'],
+        'id_opsi_kegiatan' => $value['id_opsi_kegiatan'],
+        'nama_opsi_kegiatan' => $kegiatanOption['nama_kegiatan'],
       ];
     }
-    
+
     $data = [
       'blok' => $blok,
       'daftarKegiatan' => $daftarKegiatan,

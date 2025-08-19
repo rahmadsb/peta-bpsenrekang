@@ -21,29 +21,90 @@
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($kegiatanList as $k): ?>
+      <?php foreach ($daftarKegiatan as $k): ?>
         <tr>
-          <td><?= esc($k['uuid']) ?></td>
+          <td><?= esc($k['nama_kegiatan']) ?></td>
           <td><?= esc($k['tahun']) ?></td>
           <td><?= esc($k['bulan']) ?></td>
           <td><?= esc($k['status']) ?></td>
           <td>
             <?php foreach ([['dengan_titik', 'Peta dengan Titik Bangunan'], ['tanpa_titik', 'Peta tanpa Titik Bangunan']] as [$jenis, $label]): ?>
-              <div class="mb-1"><span class="badge badge-secondary mr-1"><?= $label ?></span>
-                <?php $files = array_filter($k['peta'], function ($p) use ($jenis) {
+              <div class="mb-3 border rounded p-2" style="background-color: #f8f9fa;">
+                <div class="mb-2"><span class="badge badge-secondary mr-1"><?= $label ?></span></div>
+
+                <?php
+                $allFiles = array_filter($k['peta'], function ($p) use ($jenis) {
                   return $p['jenis_peta'] === $jenis;
-                }); ?>
-                <?php if (empty($files)): ?>
-                  <span class="text-muted">Belum ada file</span>
-                <?php else: ?>
-                  <?php foreach ($files as $file): ?>
-                    <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm" target="_blank">Download</a>
-                    <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
-                      <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-info btn-sm" target="_blank">Preview</a>
-                    <?php endif; ?>
-                    <?php if ($file['is_inset']): ?><span class="badge badge-info ml-2">Inset</span><?php endif; ?>
-                  <?php endforeach; ?>
-                <?php endif; ?>
+                });
+
+                // Pisahkan peta utama dan inset
+                $mainFiles = array_filter($allFiles, function ($p) {
+                  return $p['id_parent_peta'] == null;
+                });
+
+                $insetFiles = array_filter($allFiles, function ($p) {
+                  return $p['id_parent_peta'] != null;
+                });
+                ?>
+
+                <!-- Peta Utama -->
+                <div class="mb-2">
+                  <strong class="text-primary">Peta Utama:</strong>
+                  <?php if (empty($mainFiles)): ?>
+                    <span class="text-muted ml-2">Belum ada file</span>
+                  <?php else: ?>
+                    <div class="ml-3 mt-1">
+                      <?php foreach ($mainFiles as $file): ?>
+                        <div class="mb-1">
+                          <span class="text-dark font-weight-bold"><?= esc($file['nama_file']) ?></span>
+                          <div class="mt-1">
+                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm" target="_blank">
+                              Download
+                            </a>
+                            <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
+                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-info btn-sm ml-1" target="_blank">
+                                Preview
+                              </a>
+                            <?php endif; ?>
+                            <small class="text-muted ml-2">
+                              (<?= date('d/m/Y H:i', strtotime($file['uploaded_at'])) ?>)
+                            </small>
+                          </div>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
+                </div>
+
+                <!-- Peta Inset -->
+                <div class="mb-1">
+                  <strong class="text-success">Peta Inset:</strong>
+                  <?php if (empty($insetFiles)): ?>
+                    <span class="text-muted ml-2">Belum ada inset</span>
+                  <?php else: ?>
+                    <div class="ml-3 mt-1">
+                      <?php foreach ($insetFiles as $file): ?>
+                        <div class="mb-1 p-2 border-left border-success" style="background-color: #f0fff4;">
+                          <span class="text-dark"><?= esc($file['nama_file']) ?></span>
+                          <span class="badge badge-success badge-sm ml-1">INSET</span>
+                          <div class="mt-1">
+                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-outline-success btn-sm" target="_blank">
+                              Download
+                            </a>
+                            <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
+                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-outline-info btn-sm ml-1" target="_blank">
+                                Preview
+                              </a>
+                            <?php endif; ?>
+                            <small class="text-muted ml-2">
+                              (<?= date('d/m/Y H:i', strtotime($file['uploaded_at'])) ?>)
+                            </small>
+                          </div>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
+                </div>
               </div>
             <?php endforeach; ?>
           </td>

@@ -7,6 +7,7 @@ use App\Models\DesaModel;
 use App\Models\KegiatanDesaModel;
 use App\Models\KegiatanModel;
 use App\Models\KegiatanWilkerstatPetaModel;
+use App\Models\OpsiKegiatanModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Ramsey\Uuid\Uuid;
 
@@ -151,25 +152,43 @@ class DesaController extends BaseController
     $desaModel = new DesaModel();
     $desa = $desaModel->find($uuid);
     if (!$desa) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-    $pivot = (new KegiatanDesaModel())->where('desa_uuid', $uuid)->findAll();
+    $pivot = (new KegiatanDesaModel())->where('id_desa', $uuid)->findAll();
     $kegiatanModel = new KegiatanModel();
     $petaModel = new KegiatanWilkerstatPetaModel();
     $kegiatanList = [];
     foreach ($pivot as $row) {
-      $kegiatan = $kegiatanModel->find($row['kegiatan_uuid']);
+      $kegiatan = $kegiatanModel->find($row['id_kegiatan']);
       if ($kegiatan) {
         $peta = $petaModel->where([
-          'kegiatan_uuid' => $kegiatan['uuid'],
+          'id_kegiatan' => $kegiatan['id'],
           'wilkerstat_type' => 'desa',
-          'wilkerstat_uuid' => $uuid
+          'id_wilkerstat' => $uuid
         ])->findAll();
         $kegiatan['peta'] = $peta;
         $kegiatanList[] = $kegiatan;
       }
     }
+
+    $daftarKegiatan = [];
+    $kegiatanOptionModel = new OpsiKegiatanModel();
+    foreach ($kegiatanList as $key => $value) {
+      $kegiatanOption = $kegiatanOptionModel->find($value['id_opsi_kegiatan']);
+      $daftarKegiatan[] = [
+        'nama_kegiatan' => $kegiatanOption['nama_kegiatan'] . ' ' . $value['tahun'] . ' ' . $value['bulan'],
+        'peta' => $value['peta'],
+        'tahun' => $value['tahun'],
+        'bulan' => $value['bulan'],
+        'status' => $value['status'],
+        'id_user' => $value['id_user'],
+        'uuid' => $value['id'],
+        'id_opsi_kegiatan' => $value['id_opsi_kegiatan'],
+        'nama_opsi_kegiatan' => $kegiatanOption['nama_kegiatan'],
+      ];
+    }
+
     $data = [
       'desa' => $desa,
-      'kegiatanList' => $kegiatanList,
+      'daftarKegiatan' => $daftarKegiatan,
       'title' => 'Detail Desa',
     ];
     return view('desa/detail', $data);

@@ -1,29 +1,29 @@
 <?= $this->extend('index') ?>
 <?= $this->section('content') ?>
 <div class="container mt-4">
-  <h2>Tambah Opsi Kegiatan</h2>
-  <form action="<?= base_url('kegiatan-option/store') ?>" method="post">
-    <div class="mb-3">
-      <label for="kode_kegiatan" class="form-label">Kode Kegiatan</label>
-      <input type="text" class="form-control<?= isset($validation) && $validation->hasError('kode_kegiatan') ? ' is-invalid' : '' ?>" id="kode_kegiatan" name="kode_kegiatan" value="<?= old('kode_kegiatan') ?>" required>
-      <?php if (isset($validation) && $validation->hasError('kode_kegiatan')): ?>
-        <div class="invalid-feedback">
-          <?= $validation->getError('kode_kegiatan') ?>
-        </div>
-      <?php endif; ?>
-    </div>
-    <div class="mb-3">
-      <label for="nama_kegiatan" class="form-label">Nama Kegiatan</label>
-      <input type="text" class="form-control<?= isset($validation) && $validation->hasError('nama_kegiatan') ? ' is-invalid' : '' ?>" id="nama_kegiatan" name="nama_kegiatan" value="<?= old('nama_kegiatan') ?>" required>
-      <?php if (isset($validation) && $validation->hasError('nama_kegiatan')): ?>
-        <div class="invalid-feedback">
-          <?= $validation->getError('nama_kegiatan') ?>
-        </div>
-      <?php endif; ?>
-    </div>
-    <button type="submit" class="btn btn-primary">Simpan</button>
-    <a href="<?= base_url('kegiatan-option') ?>" class="btn btn-secondary">Batal</a>
-  </form>
+  <h2>Manajemen Opsi Kegiatan</h2>
+  <a href="<?= base_url('opsi-kegiatan/create') ?>" class="btn btn-primary mb-3">Tambah Opsi Kegiatan</a>
+  <table class="table table-bordered" id="table">
+    <thead>
+      <tr>
+        <th>Kode Kegiatan</th>
+        <th>Nama Kegiatan</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($opsi as $item): ?>
+        <tr>
+          <td><?= esc($item['kode_kegiatan']) ?></td>
+          <td><?= esc($item['nama_kegiatan']) ?></td>
+          <td>
+            <a href="<?= base_url('opsi-kegiatan/edit/' . $item['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
+            <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('opsi-kegiatan/delete/' . $item['id']) ?>">Hapus</a>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>
@@ -62,4 +62,50 @@
 <script src="<?= base_url('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
 <!-- SweetAlert2 -->
 <script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#table').DataTable();
+    $('.btn-delete').on('click', function(e) {
+      e.preventDefault();
+      var url = $(this).data('url');
+      Swal.fire({
+        title: 'Yakin ingin menghapus opsi kegiatan ini?',
+        text: "Tindakan ini tidak bisa dibatalkan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = url;
+        }
+      });
+    });
+  });
+</script>
+<?php if (session()->getFlashdata('success')): ?>
+  <script>
+    Swal.fire({
+      icon: 'success',
+      title: 'Sukses!',
+      text: '<?= session()->getFlashdata('success') ?>',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  </script>
+<?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+  <script>
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: '<?= session()->getFlashdata('error') ?>',
+      timer: 2500,
+      showConfirmButton: false
+    });
+  </script>
+<?php endif; ?>
 <?= $this->endSection() ?>

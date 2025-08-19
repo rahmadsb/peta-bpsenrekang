@@ -2,7 +2,7 @@
 <?php $this->section('content'); ?>
 <div class="container-fluid">
   <h1>Edit SLS</h1>
-  <form id="form-edit-sls" action="<?= base_url('sls/update/' . $sls['uuid']) ?>" method="post">
+  <form id="form-edit-sls" action="<?= base_url('sls/update/' . $sls['id']) ?>" method="post">
     <div class="form-group">
       <label>Kode SLS</label>
       <input type="text" name="kode_sls" class="form-control" value="<?= esc($sls['kode_sls']) ?>" required>

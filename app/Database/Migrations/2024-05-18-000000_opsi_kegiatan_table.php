@@ -9,7 +9,7 @@ class OpsiKegiatan extends Migration
   public function up()
   {
     $this->forge->addField([
-      'uuid' => [
+      'id' => [
         'type' => 'CHAR',
         'constraint' => 36,
         'null' => false,
@@ -32,12 +32,12 @@ class OpsiKegiatan extends Migration
         'null' => true,
       ],
     ]);
-    $this->forge->addKey('uuid', true);
-    $this->forge->createTable('kegiatan_option');
+    $this->forge->addKey('id', true);
+    $this->forge->createTable('opsi_kegiatan');
   }
 
   public function down()
   {
-    $this->forge->dropTable('kegiatan_option');
+    $this->forge->dropTable('opsi_kegiatan');
   }
 }

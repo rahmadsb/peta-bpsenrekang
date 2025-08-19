@@ -9,15 +9,16 @@ class KegiatanWilkerstatPetaModel extends Model
   protected $table = 'kegiatan_wilkerstat_peta';
   protected $primaryKey = 'id';
   protected $allowedFields = [
-    'kegiatan_uuid',
+    'id',
+    'id_kegiatan',
     'wilkerstat_type',
-    'wilkerstat_uuid',
+    'id_wilkerstat',
     'jenis_peta',
     'file_path',
     'nama_file',
     'uploaded_at',
     'uploader',
-    'parent_peta_id'
+    'id_parent_peta'
   ];
   public $timestamps = false;
 }

@@ -293,13 +293,16 @@ class KelolaPetaWilkerstatController extends BaseController
       log_message('debug', 'Looking for blok sensus peta with id_wilkerstat: ' . $bp['id_blok_sensus']);
 
       // Cari kegiatan terbaru yang memiliki peta untuk wilkerstat ini
-      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at')
+      // Menggunakan tahun dan bulan sebagai prioritas utama, lalu created_at sebagai tiebreaker
+      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at, kegiatan.tahun, kegiatan.bulan')
         ->join('kegiatan', 'kegiatan.id = kegiatan_wilkerstat_peta.id_kegiatan')
         ->where([
           'kegiatan_wilkerstat_peta.wilkerstat_type' => 'blok_sensus',
           'kegiatan_wilkerstat_peta.id_wilkerstat' => $bp['id_blok_sensus']
         ])
-        ->orderBy('kegiatan.created_at', 'DESC')
+        ->orderBy('kegiatan.tahun', 'DESC')
+        ->orderBy('kegiatan.bulan', 'DESC')
+        ->orderBy('kegiatan.created_at', 'DESC') // Tiebreaker jika tahun dan bulan sama
         ->first();
 
       if ($latestKegiatanWithPeta) {
@@ -310,7 +313,7 @@ class KelolaPetaWilkerstatController extends BaseController
           'id_kegiatan' => $latestKegiatanWithPeta['id_kegiatan']
         ])->findAll();
 
-        log_message('debug', 'Found ' . count($files) . ' files for blok sensus ' . $bp['id_blok_sensus'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan']);
+        log_message('debug', 'Found ' . count($files) . ' files for blok sensus ' . $bp['id_blok_sensus'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan'] . ' (Tahun: ' . $latestKegiatanWithPeta['tahun'] . ', Bulan: ' . $latestKegiatanWithPeta['bulan'] . ')');
         $allFiles = array_merge($allFiles, $files);
       } else {
         log_message('debug', 'No peta found for blok sensus ' . $bp['id_blok_sensus']);
@@ -322,13 +325,16 @@ class KelolaPetaWilkerstatController extends BaseController
       log_message('debug', 'Looking for SLS peta with id_wilkerstat: ' . $sp['id_sls']);
 
       // Cari kegiatan terbaru yang memiliki peta untuk wilkerstat ini
-      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at')
+      // Menggunakan tahun dan bulan sebagai prioritas utama, lalu created_at sebagai tiebreaker
+      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at, kegiatan.tahun, kegiatan.bulan')
         ->join('kegiatan', 'kegiatan.id = kegiatan_wilkerstat_peta.id_kegiatan')
         ->where([
           'kegiatan_wilkerstat_peta.wilkerstat_type' => 'sls',
           'kegiatan_wilkerstat_peta.id_wilkerstat' => $sp['id_sls']
         ])
-        ->orderBy('kegiatan.created_at', 'DESC')
+        ->orderBy('kegiatan.tahun', 'DESC')
+        ->orderBy('kegiatan.bulan', 'DESC')
+        ->orderBy('kegiatan.created_at', 'DESC') // Tiebreaker jika tahun dan bulan sama
         ->first();
 
       if ($latestKegiatanWithPeta) {
@@ -339,7 +345,7 @@ class KelolaPetaWilkerstatController extends BaseController
           'id_kegiatan' => $latestKegiatanWithPeta['id_kegiatan']
         ])->findAll();
 
-        log_message('debug', 'Found ' . count($files) . ' files for SLS ' . $sp['id_sls'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan']);
+        log_message('debug', 'Found ' . count($files) . ' files for SLS ' . $sp['id_sls'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan'] . ' (Tahun: ' . $latestKegiatanWithPeta['tahun'] . ', Bulan: ' . $latestKegiatanWithPeta['bulan'] . ')');
         $allFiles = array_merge($allFiles, $files);
       } else {
         log_message('debug', 'No peta found for SLS ' . $sp['id_sls']);
@@ -351,13 +357,16 @@ class KelolaPetaWilkerstatController extends BaseController
       log_message('debug', 'Looking for desa peta with id_wilkerstat: ' . $dp['id_desa']);
 
       // Cari kegiatan terbaru yang memiliki peta untuk wilkerstat ini
-      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at')
+      // Menggunakan tahun dan bulan sebagai prioritas utama, lalu created_at sebagai tiebreaker
+      $latestKegiatanWithPeta = $petaModel->select('kegiatan_wilkerstat_peta.*, kegiatan.created_at as kegiatan_created_at, kegiatan.tahun, kegiatan.bulan')
         ->join('kegiatan', 'kegiatan.id = kegiatan_wilkerstat_peta.id_kegiatan')
         ->where([
           'kegiatan_wilkerstat_peta.wilkerstat_type' => 'desa',
           'kegiatan_wilkerstat_peta.id_wilkerstat' => $dp['id_desa']
         ])
-        ->orderBy('kegiatan.created_at', 'DESC')
+        ->orderBy('kegiatan.tahun', 'DESC')
+        ->orderBy('kegiatan.bulan', 'DESC')
+        ->orderBy('kegiatan.created_at', 'DESC') // Tiebreaker jika tahun dan bulan sama
         ->first();
 
       if ($latestKegiatanWithPeta) {
@@ -368,7 +377,7 @@ class KelolaPetaWilkerstatController extends BaseController
           'id_kegiatan' => $latestKegiatanWithPeta['id_kegiatan']
         ])->findAll();
 
-        log_message('debug', 'Found ' . count($files) . ' files for desa ' . $dp['id_desa'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan']);
+        log_message('debug', 'Found ' . count($files) . ' files for desa ' . $dp['id_desa'] . ' from latest kegiatan: ' . $latestKegiatanWithPeta['id_kegiatan'] . ' (Tahun: ' . $latestKegiatanWithPeta['tahun'] . ', Bulan: ' . $latestKegiatanWithPeta['bulan'] . ')');
         $allFiles = array_merge($allFiles, $files);
       } else {
         log_message('debug', 'No peta found for desa ' . $dp['id_desa']);
@@ -407,12 +416,12 @@ class KelolaPetaWilkerstatController extends BaseController
     if ($zipResult === TRUE) {
       log_message('info', 'Zip file opened successfully');
 
-      // Group files by wilkerstat type and ID for better organization
+      // Group files by kegiatan for simple folder structure
       $groupedFiles = [];
       $kegiatanInfoMap = []; // Cache untuk informasi kegiatan
 
       foreach ($allFiles as $file) {
-        // Get kegiatan info for better folder naming
+        // Get kegiatan info for folder naming
         if (!isset($kegiatanInfoMap[$file['id_kegiatan']])) {
           $kegiatanInfo = $kegiatanModel->find($file['id_kegiatan']);
           $opsiInfo = $opsiModel->find($kegiatanInfo['id_opsi_kegiatan']);
@@ -427,24 +436,23 @@ class KelolaPetaWilkerstatController extends BaseController
           $kegiatanInfoMap[$file['id_kegiatan']]['tahun'] . '_' .
           $kegiatanInfoMap[$file['id_kegiatan']]['bulan'];
 
-        $key = $kegiatanName . '/' . $file['wilkerstat_type'] . '_' . $file['id_wilkerstat'] . '_' . $file['jenis_peta'];
-        if (!isset($groupedFiles[$key])) {
-          $groupedFiles[$key] = [];
+        // Simple grouping by kegiatan name only
+        if (!isset($groupedFiles[$kegiatanName])) {
+          $groupedFiles[$kegiatanName] = [];
         }
-        $groupedFiles[$key][] = $file;
+        $groupedFiles[$kegiatanName][] = $file;
       }
 
       log_message('info', 'Grouped files into ' . count($groupedFiles) . ' groups');
 
-      // Add files to zip with organized folder structure
+      // Add files to zip with simple folder structure
       $addedFiles = 0;
-      foreach ($groupedFiles as $groupKey => $files) {
+      foreach ($groupedFiles as $kegiatanName => $files) {
         foreach ($files as $file) {
           $filePath = WRITEPATH . 'uploads/' . $file['file_path'];
           if (file_exists($filePath)) {
-            // Create folder structure: wilkerstat_type/id_wilkerstat/jenis_peta/
-            $folderName = str_replace('_', '/', $groupKey);
-            $zipEntryName = $folderName . '/' . $file['nama_file'];
+            // Simple structure: kegiatan_name/file.ext
+            $zipEntryName = $kegiatanName . '/' . $file['nama_file'];
             $zip->addFile($filePath, $zipEntryName);
             $addedFiles++;
             log_message('debug', 'Added file to zip: ' . $zipEntryName);

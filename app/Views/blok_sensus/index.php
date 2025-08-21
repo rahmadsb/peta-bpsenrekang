@@ -1,12 +1,34 @@
 <?php $this->extend('index'); ?>
 <?php $this->section('content'); ?>
+<style>
+  /* Custom styling for action buttons */
+  .btn-action {
+    margin-right: 2px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-action i {
+    font-size: 0.875rem;
+  }
+</style>
 <div class="container-fluid">
   <h1><?= $title ?></h1>
-  <a href="<?= base_url('blok-sensus/create') ?>" class="btn btn-primary mb-3">Tambah Blok Sensus</a>
-  <a href="<?= base_url('blok-sensus/export-excel') ?>" class="btn btn-success mb-3">Ekspor Excel</a>
+  <a href="<?= base_url('blok-sensus/create') ?>" class="btn btn-primary mb-3">
+    <i class="fas fa-plus"></i> Tambah Blok Sensus
+  </a>
+  <a href="<?= base_url('blok-sensus/export-excel') ?>" class="btn btn-success mb-3">
+    <i class="fas fa-file-excel"></i> Ekspor Excel
+  </a>
   <form action="<?= base_url('blok-sensus/import-excel') ?>" method="post" enctype="multipart/form-data" class="d-inline">
     <input type="file" name="excel_file" required>
-    <button type="submit" class="btn btn-info mb-3">Impor Excel</button>
+    <button type="submit" class="btn btn-info mb-3">
+      <i class="fas fa-file-import"></i> Impor Excel
+    </button>
   </form>
   <table id="blokSensusTable" class="table table-bordered table-striped">
     <thead>
@@ -16,8 +38,6 @@
         <th>Nama SLS</th>
         <th>Nama Desa</th>
         <th>Kecamatan</th>
-        <th>Kabupaten</th>
-        <th>Provinsi</th>
         <th>Aksi</th>
       </tr>
     </thead>
@@ -29,13 +49,17 @@
           <td><?= esc($bs['nama_sls']) ?></td>
           <td><?= esc($bs['nama_desa']) ?></td>
           <td><?= esc($bs['nama_kecamatan']) ?></td>
-          <td><?= esc($bs['nama_kabupaten']) ?></td>
-          <td><?= esc($bs['nama_provinsi']) ?></td>
           <td>
-            <a href="<?= base_url('blok-sensus/detail/' . $bs['id']) ?>" class="btn btn-info btn-sm">Detail</a>
-            <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm">Edit</a>
+            <a href="<?= base_url('blok-sensus/detail/' . $bs['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
+              <i class="fas fa-eye"></i>
+            </a>
+            <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
+              <i class="fas fa-edit"></i>
+            </a>
             <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
-              <button type="button" class="btn btn-danger btn-sm btn-delete">Hapus</button>
+              <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
+                <i class="fas fa-trash"></i>
+              </button>
             </form>
           </td>
         </tr>

@@ -1,9 +1,27 @@
 <?= $this->extend('index') ?>
 <?= $this->section('content') ?>
+<style>
+  /* Custom styling for action buttons */
+  .btn-action {
+    margin-right: 2px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-action i {
+    font-size: 0.875rem;
+  }
+</style>
 <div class="container mt-4">
   <h2>Manajemen Kegiatan</h2>
   <?php if ($canManage): ?>
-    <a href="<?= base_url('kegiatan/create') ?>" class="btn btn-primary mb-3">Tambah Kegiatan</a>
+    <a href="<?= base_url('kegiatan/create') ?>" class="btn btn-primary mb-3">
+      <i class="fas fa-plus"></i> Tambah Kegiatan
+    </a>
   <?php endif; ?>
   <table class="table table-bordered" id="table">
     <thead>
@@ -26,9 +44,15 @@
           <td><?= esc($item['status']) ?></td>
           <?php if ($canManage): ?>
             <td>
-              <a href="<?= base_url('kegiatan/edit/' . $item['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
-              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['id']) ?>" class="btn btn-sm btn-info">Kelola Peta Wilkerstat</a>
-              <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('kegiatan/delete/' . $item['id']) ?>">Hapus</a>
+              <a href="<?= base_url('kegiatan/edit/' . $item['id']) ?>" class="btn btn-sm btn-warning btn-action" title="Edit">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['id']) ?>" class="btn btn-sm btn-info btn-action" title="Kelola Peta Wilkerstat">
+                <i class="fas fa-map"></i>
+              </a>
+              <a href="#" class="btn btn-sm btn-danger btn-delete btn-action" data-url="<?= base_url('kegiatan/delete/' . $item['id']) ?>" title="Hapus">
+                <i class="fas fa-trash"></i>
+              </a>
             </td>
           <?php endif; ?>
         </tr>

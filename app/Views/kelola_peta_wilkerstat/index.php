@@ -126,6 +126,7 @@
                           <span class="badge badge-info badge-sm">📍 <?= $labelPeta ?></span>
                           <!-- Upload peta utama -->
                           <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="id_kegiatan" value="<?= esc($kegiatan['id']) ?>">
                             <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
                             <input type="hidden" name="id_wilkerstat" value="<?= esc($ws['id']) ?>">
@@ -168,6 +169,7 @@
                                     <button type="button" class="btn btn-outline-warning btn-xs mr-1 btn-replace-file" title="Ganti">🔄</button>
                                     <button type="button" class="btn btn-outline-secondary btn-xs mr-1 btn-rename-file" title="Rename">✏️</button>
                                     <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $utama['id']) ?>" method="post" class="d-inline delete-form">
+                                      <?= csrf_field() ?>
                                       <button type="button" class="btn btn-outline-danger btn-xs btn-delete" title="Hapus">🗑️</button>
                                     </form>
                                   </div>
@@ -175,9 +177,11 @@
 
                                 <!-- Form rename (tersembunyi) -->
                                 <form action="<?= base_url('kelola-peta-wilkerstat/rename/' . $utama['id']) ?>" method="post" class="form-rename-file d-none mb-2">
+                                  <?= csrf_field() ?>
                                   <div class="input-group input-group-sm">
-                                    <input type="text" name="new_nama_file" class="form-control" value="<?= esc($utama['nama_file']) ?>" required>
+                                    <input type="text" name="new_nama_file" class="form-control" value="<?= esc(pathinfo($utama['nama_file'], PATHINFO_FILENAME)) ?>" required>
                                     <div class="input-group-append">
+                                      <span class="input-group-text">.<?= esc(pathinfo($utama['nama_file'], PATHINFO_EXTENSION)) ?></span>
                                       <button type="submit" class="btn btn-primary btn-sm">💾</button>
                                       <button type="button" class="btn btn-secondary btn-sm btn-cancel-rename">❌</button>
                                     </div>
@@ -186,6 +190,7 @@
 
                                 <!-- Form replace (tersembunyi) -->
                                 <form action="<?= base_url('kelola-peta-wilkerstat/replace/' . $utama['id']) ?>" method="post" enctype="multipart/form-data" class="form-replace-file d-none mb-2">
+                                  <?= csrf_field() ?>
                                   <div class="input-group input-group-sm">
                                     <input type="file" name="replace_file" accept=".jpg,.jpeg,.png" required class="form-control">
                                     <div class="input-group-append">
@@ -193,13 +198,12 @@
                                       <button type="button" class="btn btn-secondary btn-sm btn-cancel-replace">❌</button>
                                     </div>
                                   </div>
-                                </form>
-
-                                <!-- Upload inset section -->
+                                </form> <!-- Upload inset section -->
                                 <div class="border-top pt-2 mt-2" style="background-color: #f8f9fa;">
                                   <div class="d-flex align-items-center mb-2">
                                     <span class="badge badge-success badge-sm mr-2">UPLOAD INSET</span>
                                     <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-flex align-items-center flex-grow-1">
+                                      <?= csrf_field() ?>
                                       <input type="hidden" name="id_kegiatan" value="<?= esc($kegiatan['id']) ?>">
                                       <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
                                       <input type="hidden" name="id_wilkerstat" value="<?= esc($ws['id']) ?>">
@@ -240,6 +244,7 @@
                                             <button type="button" class="btn btn-outline-warning btn-xs mr-1 btn-replace-file" title="Ganti">🔄</button>
                                             <button type="button" class="btn btn-outline-secondary btn-xs mr-1 btn-rename-file" title="Rename">✏️</button>
                                             <form action="<?= base_url('kelola-peta-wilkerstat/delete/' . $file['id']) ?>" method="post" class="d-inline delete-form">
+                                              <?= csrf_field() ?>
                                               <button type="button" class="btn btn-outline-danger btn-xs btn-delete" title="Hapus">🗑️</button>
                                             </form>
                                           </div>
@@ -247,9 +252,11 @@
 
                                         <!-- Form rename inset (tersembunyi) -->
                                         <form action="<?= base_url('kelola-peta-wilkerstat/rename/' . $file['id']) ?>" method="post" class="form-rename-file d-none mt-2">
+                                          <?= csrf_field() ?>
                                           <div class="input-group input-group-sm">
-                                            <input type="text" name="new_nama_file" class="form-control" value="<?= esc($file['nama_file']) ?>" required>
+                                            <input type="text" name="new_nama_file" class="form-control" value="<?= esc(pathinfo($file['nama_file'], PATHINFO_FILENAME)) ?>" required>
                                             <div class="input-group-append">
+                                              <span class="input-group-text">.<?= esc(pathinfo($file['nama_file'], PATHINFO_EXTENSION)) ?></span>
                                               <button type="submit" class="btn btn-primary btn-sm">💾</button>
                                               <button type="button" class="btn btn-secondary btn-sm btn-cancel-rename">❌</button>
                                             </div>
@@ -258,6 +265,7 @@
 
                                         <!-- Form replace inset (tersembunyi) -->
                                         <form action="<?= base_url('kelola-peta-wilkerstat/replace/' . $file['id']) ?>" method="post" enctype="multipart/form-data" class="form-replace-file d-none mt-2">
+                                          <?= csrf_field() ?>
                                           <div class="input-group input-group-sm">
                                             <input type="file" name="replace_file" accept=".jpg,.jpeg,.png" required class="form-control">
                                             <div class="input-group-append">
@@ -333,9 +341,10 @@
     $('.btn-delete').on('click', function(e) {
       e.preventDefault();
       const form = $(this).closest('form');
+      const fileName = $(this).closest('li, .border').find('.font-weight-bold, .text-dark').first().text();
       Swal.fire({
         title: 'Yakin hapus file peta?',
-        text: 'File yang dihapus tidak dapat dikembalikan!',
+        html: `File: <strong>${fileName}</strong><br/>File yang dihapus tidak dapat dikembalikan!`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -344,9 +353,67 @@
         cancelButtonText: 'Batal'
       }).then((result) => {
         if (result.isConfirmed) {
+          // Show loading
+          Swal.fire({
+            title: 'Menghapus file...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+              Swal.showLoading();
+            }
+          });
           form.submit();
         }
       });
+    });
+
+    // Validation for rename form
+    $(document).on('submit', '.form-rename-file', function(e) {
+      const namaFile = $(this).find('input[name="new_nama_file"]').val().trim();
+      if (namaFile === '') {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Nama file tidak boleh kosong!'
+        });
+        return false;
+      }
+      if (!/^[a-zA-Z0-9\s\-_\(\)]+$/.test(namaFile)) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Nama file hanya boleh mengandung huruf, angka, spasi, tanda minus, underscore, dan tanda kurung!'
+        });
+        return false;
+      }
+    });
+
+    // Validation for replace form
+    $(document).on('submit', '.form-replace-file', function(e) {
+      const fileInput = $(this).find('input[type="file"]')[0];
+      if (!fileInput.files.length) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Pilih file untuk mengganti!'
+        });
+        return false;
+      }
+
+      const file = fileInput.files[0];
+      const allowedTypes = ['image/jpeg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'File harus berformat JPG atau PNG!'
+        });
+        return false;
+      }
     });
   });
   $(function() {
@@ -402,8 +469,9 @@
     }
   });
   $(document).on('click', '.btn-replace-file', function() {
-    var form = $(this).closest('li').find('.form-replace-file');
+    var form = $(this).closest('li, .border').find('.form-replace-file');
     $('.form-replace-file').not(form).addClass('d-none');
+    $('.form-rename-file').addClass('d-none'); // Hide all rename forms
     form.toggleClass('d-none');
   });
   $(document).on('click', '.btn-cancel-replace', function(e) {
@@ -411,9 +479,16 @@
     $(this).closest('.form-replace-file').addClass('d-none');
   });
   $(document).on('click', '.btn-rename-file', function() {
-    var form = $(this).closest('li, .list-group-item').find('.form-rename-file');
+    var form = $(this).closest('li, .border').find('.form-rename-file');
     $('.form-rename-file').not(form).addClass('d-none');
+    $('.form-replace-file').addClass('d-none'); // Hide all replace forms
     form.toggleClass('d-none');
+    // Focus on input field when opened
+    if (!form.hasClass('d-none')) {
+      setTimeout(function() {
+        form.find('input[name="new_nama_file"]').focus().select();
+      }, 100);
+    }
   });
   $(document).on('click', '.btn-cancel-rename', function(e) {
     e.preventDefault();

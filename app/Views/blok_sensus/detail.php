@@ -1,5 +1,21 @@
 <?php $this->extend('index'); ?>
 <?php $this->section('content'); ?>
+<style>
+  /* Custom styling for action buttons */
+  .btn-action {
+    margin-right: 4px;
+    transition: all 0.2s ease-in-out;
+    min-width: 32px;
+    padding: 0.25rem 0.4rem;
+  }
+  .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .btn-action i {
+    font-size: 0.875rem;
+  }
+</style>
 <div class="container-fluid">
   <h1><?= $title ?></h1>
   <div class="mb-3">
@@ -59,12 +75,12 @@
                         <div class="mb-1">
                           <span class="text-dark font-weight-bold"><?= esc($file['nama_file']) ?></span>
                           <div class="mt-1">
-                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm" target="_blank">
-                              Download
+                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-success btn-sm btn-action" target="_blank" title="Download">
+                              <i class="fas fa-download"></i>
                             </a>
                             <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
-                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-info btn-sm ml-1" target="_blank">
-                                Preview
+                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-info btn-sm btn-action" target="_blank" title="Preview">
+                                <i class="fas fa-eye"></i>
                               </a>
                             <?php endif; ?>
                             <small class="text-muted ml-2">
@@ -89,12 +105,12 @@
                           <span class="text-dark"><?= esc($file['nama_file']) ?></span>
                           <span class="badge badge-success badge-sm ml-1">INSET</span>
                           <div class="mt-1">
-                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-outline-success btn-sm" target="_blank">
-                              Download
+                            <a href="<?= base_url('kelola-peta-wilkerstat/download/' . $file['id']) ?>" class="btn btn-outline-success btn-sm btn-action" target="_blank" title="Download">
+                              <i class="fas fa-download"></i>
                             </a>
                             <?php if (in_array(strtolower(pathinfo($file['nama_file'], PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])): ?>
-                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-outline-info btn-sm ml-1" target="_blank">
-                                Preview
+                              <a href="<?= base_url('preview-peta/' . $file['file_path']) ?>" class="btn btn-outline-info btn-sm btn-action" target="_blank" title="Preview">
+                                <i class="fas fa-eye"></i>
                               </a>
                             <?php endif; ?>
                             <small class="text-muted ml-2">

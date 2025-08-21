@@ -200,17 +200,22 @@ class KelolaPetaWilkerstatController extends BaseController
     if (!$newNama || trim($newNama) === '') {
       return redirect()->back()->with('error', 'Nama file tidak boleh kosong.');
     }
-    // Rename file fisik di server
-    $oldPath = WRITEPATH . 'uploads/' . $file['file_path'];
-    $ext = pathinfo($file['file_path'], PATHINFO_EXTENSION);
-    $newNamaServer = pathinfo($newNama, PATHINFO_FILENAME) . '.' . $ext;
-    $newPath = WRITEPATH . 'uploads/' . $newNamaServer;
-    if (file_exists($oldPath)) {
-      if (!rename($oldPath, $newPath)) {
-        return redirect()->back()->with('error', 'Gagal mengganti nama file di server.');
-      }
+
+    // Ambil ekstensi file asli dan pastikan tidak berubah
+    $originalExt = pathinfo($file['nama_file'], PATHINFO_EXTENSION);
+    $newNamaFull = trim($newNama) . '.' . $originalExt;
+
+    // Validate nama file (tidak boleh mengandung karakter khusus)
+    if (!preg_match('/^[a-zA-Z0-9\s\-_\(\)]+$/', $newNama)) {
+      return redirect()->back()->with('error', 'Nama file hanya boleh mengandung huruf, angka, spasi, tanda minus, underscore, dan tanda kurung.');
     }
-    $petaModel->update($id, ['nama_file' => $newNama, 'file_path' => $newNamaServer]);
+
+    // Update nama file di database (tidak perlu mengubah file fisik di server)
+    $petaModel->update($id, [
+      'nama_file' => $newNamaFull,
+      'uploaded_at' => date('Y-m-d H:i:s'),
+      'uploader' => session('username')
+    ]);
     return redirect()->back()->with('success', 'Nama file berhasil diubah.');
   }
 }

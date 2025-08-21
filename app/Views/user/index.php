@@ -1,8 +1,26 @@
 <?= $this->extend('index') ?>
 <?= $this->section('content') ?>
+<style>
+  /* Custom styling for action buttons */
+  .btn-action {
+    margin-right: 2px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-action i {
+    font-size: 0.875rem;
+  }
+</style>
 <div class="container mt-4">
   <h2>Manajemen User</h2>
-  <a href="<?= base_url('user/create') ?>" class="btn btn-primary mb-3">Tambah User</a>
+  <a href="<?= base_url('user/create') ?>" class="btn btn-primary mb-3">
+    <i class="fas fa-user-plus"></i> Tambah User
+  </a>
   <table class="table table-bordered" id="table-user">
     <thead>
       <tr>
@@ -17,8 +35,12 @@
           <td><?= esc($user['username']) ?></td>
           <td><?= esc($user['role']) ?></td>
           <td>
-            <a href="#" class="btn btn-sm btn-danger btn-delete" data-url="<?= base_url('user/delete/' . $user['id']) ?>">Hapus</a>
-            <a href="<?= base_url('user/edit/' . $user['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
+            <a href="<?= base_url('user/edit/' . $user['id']) ?>" class="btn btn-sm btn-warning btn-action" title="Edit">
+              <i class="fas fa-edit"></i>
+            </a>
+            <a href="#" class="btn btn-sm btn-danger btn-delete btn-action" data-url="<?= base_url('user/delete/' . $user['id']) ?>" title="Hapus">
+              <i class="fas fa-trash"></i>
+            </a>
           </td>
         </tr>
       <?php endforeach; ?>

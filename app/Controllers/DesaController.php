@@ -19,8 +19,21 @@ class DesaController extends BaseController
       return redirect()->to('/login');
     }
     $role = session('role');
-    if ($role !== 'ADMIN' && $role !== 'IPDS') {
+    if (!in_array($role, ['ADMIN', 'IPDS', 'SUBJECT_MATTER', 'GUEST'])) {
       return redirect()->to('/');
+    }
+    return null;
+  }
+
+  private function checkManageAccess()
+  {
+    if (!session()->get('logged_in')) {
+      return redirect()->to('/login');
+    }
+    $role = session('role');
+    if ($role !== 'ADMIN' && $role !== 'IPDS') {
+      session()->setFlashdata('error', 'Anda tidak memiliki akses untuk melakukan operasi ini.');
+      return redirect()->to('/desa');
     }
     return null;
   }
@@ -36,14 +49,14 @@ class DesaController extends BaseController
 
   public function create()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $data['title'] = 'Tambah Desa';
     return view('desa/create', $data);
   }
 
   public function store()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $validation = \Config\Services::validation();
     $validation->setRules([
       'kode_desa' => 'required|is_unique[desa.kode_desa]',
@@ -63,7 +76,7 @@ class DesaController extends BaseController
 
   public function edit($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new DesaModel();
     $desa = $model->find($uuid);
     if (!$desa) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
@@ -74,7 +87,7 @@ class DesaController extends BaseController
 
   public function update($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $validation = \Config\Services::validation();
     $validation->setRules([
       'kode_desa' => 'required',
@@ -95,7 +108,7 @@ class DesaController extends BaseController
 
   public function delete($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new DesaModel();
     $model->delete($uuid);
     return redirect()->to('/desa')->with('success', 'Desa berhasil dihapus');
@@ -103,7 +116,7 @@ class DesaController extends BaseController
 
   public function exportExcel()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new DesaModel();
     $data = $model->findAll();
 
@@ -142,7 +155,7 @@ class DesaController extends BaseController
 
   public function importExcel()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     // Implementasi impor Excel di sini
   }
 

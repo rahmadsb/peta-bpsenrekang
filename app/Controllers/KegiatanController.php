@@ -22,6 +22,41 @@ class KegiatanController extends BaseController
     return in_array($role, ['ADMIN', 'IPDS', 'SUBJECT_MATTER']);
   }
 
+  private function canView()
+  {
+    $role = session('role');
+    return in_array($role, ['ADMIN', 'IPDS', 'SUBJECT_MATTER', 'GUEST']);
+  }
+
+  private function canManageKegiatan($kegiatanId = null)
+  {
+    $role = session('role');
+    $userId = session('user_id');
+
+    // ADMIN dan IPDS bisa manage semua kegiatan
+    if (in_array($role, ['ADMIN', 'IPDS'])) {
+      return true;
+    }
+
+    // SUBJECT_MATTER hanya bisa manage kegiatan yang dibuat olehnya
+    if ($role === 'SUBJECT_MATTER') {
+      if ($kegiatanId) {
+        $kegiatanModel = new KegiatanModel();
+        $kegiatan = $kegiatanModel->find($kegiatanId);
+        return $kegiatan && $kegiatan['id_user'] === $userId;
+      }
+      return true; // Untuk create kegiatan baru
+    }
+
+    return false;
+  }
+
+  private function canChangeStatus($kegiatanId = null)
+  {
+    $role = session('role');
+    return in_array($role, ['ADMIN', 'IPDS']);
+  }
+
   private $bulanList = [
     'Januari',
     'Februari',
@@ -39,16 +74,31 @@ class KegiatanController extends BaseController
 
   public function index()
   {
+    if (!$this->canView()) return redirect()->to('/');
     $model = new KegiatanModel();
     $optionModel = new OpsiKegiatanModel();
+    $userModel = new \App\Models\UserModel();
+
     $data['kegiatan'] = $model->findAll();
     $opsi = $optionModel->findAll();
+    $users = $userModel->findAll();
+
     $opsiMap = [];
     foreach ($opsi as $o) {
       $opsiMap[$o['id']] = $o['nama_kegiatan'];
     }
+
+    $userMap = [];
+    foreach ($users as $u) {
+      $userMap[$u['id']] = $u['username'];
+    }
+
     $data['opsiMap'] = $opsiMap;
+    $data['userMap'] = $userMap;
     $data['canManage'] = $this->canManage();
+    $data['canView'] = $this->canView();
+    $data['currentUserId'] = session('user_id');
+    $data['currentRole'] = session('role');
     $data['title'] = 'Kegiatan';
     $data['bulanList'] = $this->bulanList;
     return view('kegiatan/index', $data);
@@ -56,7 +106,7 @@ class KegiatanController extends BaseController
 
   public function create()
   {
-    if (!$this->canManage()) return redirect()->to('/kegiatan');
+    if (!$this->canManageKegiatan()) return redirect()->to('/kegiatan');
     $optionModel = new OpsiKegiatanModel();
     $data['opsi'] = $optionModel->findAll();
     $data['title'] = 'Tambah Kegiatan';
@@ -70,7 +120,7 @@ class KegiatanController extends BaseController
   public function store()
   {
     // dd($_POST);
-    if (!$this->canManage()) return redirect()->to('/kegiatan');
+    if (!$this->canManageKegiatan()) return redirect()->to('/kegiatan');
     $validation = \Config\Services::validation();
     $validation->setRules([
       'id_opsi_kegiatan' => 'required',
@@ -102,9 +152,8 @@ class KegiatanController extends BaseController
       return redirect()->to('/login')->with('error', 'Invalid user session. Please login again.');
     }
 
-    $role = session('role');
+    // Status default untuk semua kegiatan baru adalah "disiapkan (IPDS)"
     $status = 'disiapkan (IPDS)';
-    if ($role === 'SUBJECT_MATTER') $status = 'digunakan (SM)';
     $model = new KegiatanModel();
     $uuid = Uuid::uuid4()->toString();
     $model->insert([
@@ -146,7 +195,10 @@ class KegiatanController extends BaseController
 
   public function edit($uuid)
   {
-    if (!$this->canManage()) return redirect()->to('/kegiatan');
+    if (!$this->canManageKegiatan($uuid)) {
+      session()->setFlashdata('error', 'Anda tidak memiliki akses untuk mengedit kegiatan ini.');
+      return redirect()->to('/kegiatan');
+    }
     $model = new KegiatanModel();
     $optionModel = new OpsiKegiatanModel();
     $kegiatan = $model->find($uuid);
@@ -162,6 +214,7 @@ class KegiatanController extends BaseController
     ];
     $data['title'] = 'Edit Kegiatan';
     $data['bulanList'] = $this->bulanList;
+    $data['canChangeStatus'] = $this->canChangeStatus($uuid);
     $data['blokSensusList'] = (new BlokSensusModel())->findAll();
     $data['slsList'] = (new SlsModel())->findAll();
     $data['desaList'] = (new DesaModel())->findAll();
@@ -173,7 +226,10 @@ class KegiatanController extends BaseController
 
   public function update($uuid)
   {
-    if (!$this->canManage()) return redirect()->to('/kegiatan');
+    if (!$this->canManageKegiatan($uuid)) {
+      session()->setFlashdata('error', 'Anda tidak memiliki akses untuk mengedit kegiatan ini.');
+      return redirect()->to('/kegiatan');
+    }
     $validation = \Config\Services::validation();
     $validation->setRules([
       'id_opsi_kegiatan' => 'required',
@@ -245,9 +301,66 @@ class KegiatanController extends BaseController
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil diupdate');
   }
 
+  public function detail($uuid)
+  {
+    if (!$this->canView()) return redirect()->to('/');
+
+    $kegiatanModel = new KegiatanModel();
+    $opsiModel = new OpsiKegiatanModel();
+    $kegiatanBlokModel = new KegiatanBlokSensusModel();
+    $kegiatanSlsModel = new KegiatanSlsModel();
+    $kegiatanDesaModel = new KegiatanDesaModel();
+    $blokModel = new BlokSensusModel();
+    $slsModel = new SlsModel();
+    $desaModel = new DesaModel();
+
+    $kegiatan = $kegiatanModel->find($uuid);
+    if (!$kegiatan) {
+      throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
+
+    $opsi = $opsiModel->find($kegiatan['id_opsi_kegiatan']);
+
+    // Get related wilkerstat
+    $kegiatanBloks = $kegiatanBlokModel->where('id_kegiatan', $uuid)->findAll();
+    $kegiatanSls = $kegiatanSlsModel->where('id_kegiatan', $uuid)->findAll();
+    $kegiatanDesas = $kegiatanDesaModel->where('id_kegiatan', $uuid)->findAll();
+
+    $blokSensus = [];
+    foreach ($kegiatanBloks as $kb) {
+      $blok = $blokModel->find($kb['id_blok_sensus']);
+      if ($blok) $blokSensus[] = $blok;
+    }
+
+    $sls = [];
+    foreach ($kegiatanSls as $ks) {
+      $slsData = $slsModel->find($ks['id_sls']);
+      if ($slsData) $sls[] = $slsData;
+    }
+
+    $desa = [];
+    foreach ($kegiatanDesas as $kd) {
+      $desaData = $desaModel->find($kd['id_desa']);
+      if ($desaData) $desa[] = $desaData;
+    }
+
+    $data = [
+      'title' => 'Detail Kegiatan',
+      'kegiatan' => $kegiatan,
+      'opsi' => $opsi,
+      'blokSensus' => $blokSensus,
+      'sls' => $sls,
+      'desa' => $desa,
+      'bulanList' => $this->bulanList,
+      'canManage' => $this->canManage()
+    ];
+
+    return view('kegiatan/detail', $data);
+  }
+
   public function delete($uuid)
   {
-    if (!$this->canManage()) return redirect()->to('/kegiatan');
+    if (!$this->canManageKegiatan($uuid)) return redirect()->to('/kegiatan');
     $model = new KegiatanModel();
     $model->delete($uuid);
     return redirect()->to('/kegiatan')->with('success', 'Kegiatan berhasil dihapus');

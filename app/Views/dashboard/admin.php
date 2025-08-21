@@ -1,11 +1,28 @@
 <?= $this->extend('index') ?>
 
 <?= $this->section('content') ?>
+<style>
+  /* Chart container styling */
+  #statusChart {
+    max-height: 400px;
+    width: 100% !important;
+  }
+
+  /* Dashboard card improvements */
+  .dashboard-card {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
 <div class="container-fluid">
   <h1>Dashboard Admin</h1>
   <div class="row mt-4">
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-primary h-100">
+      <div class="card text-white bg-primary h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Total Kegiatan</h5>
           <h2><?= $totalKegiatan ?></h2>
@@ -13,7 +30,7 @@
       </div>
     </div>
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-success h-100">
+      <div class="card text-white bg-success h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Total Peta</h5>
           <h2><?= $totalPeta ?></h2>
@@ -21,7 +38,7 @@
       </div>
     </div>
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-info h-100">
+      <div class="card text-white bg-info h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">User</h5>
           <h2><?= $totalUser ?></h2>
@@ -29,7 +46,7 @@
       </div>
     </div>
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-secondary h-100">
+      <div class="card text-white bg-secondary h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Blok Sensus</h5>
           <h2><?= $totalBlok ?></h2>
@@ -37,7 +54,7 @@
       </div>
     </div>
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-warning h-100">
+      <div class="card text-white bg-warning h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">SLS</h5>
           <h2><?= $totalSls ?></h2>
@@ -45,7 +62,7 @@
       </div>
     </div>
     <div class="col-md-2 mb-3">
-      <div class="card text-white bg-dark h-100">
+      <div class="card text-white bg-dark h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Desa</h5>
           <h2><?= $totalDesa ?></h2>
@@ -54,9 +71,11 @@
     </div>
   </div>
   <div class="row mt-4">
-    <div class="col-md-6">
+    <div class="col-12">
       <div class="card">
-        <div class="card-header">Status Kegiatan</div>
+        <div class="card-header">
+          <h5 class="mb-0">Status Kegiatan</h5>
+        </div>
         <div class="card-body">
           <canvas id="statusChart"></canvas>
         </div>
@@ -117,6 +136,7 @@
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           display: false

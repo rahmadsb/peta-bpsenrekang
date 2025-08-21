@@ -8,8 +8,22 @@ use Ramsey\Uuid\Uuid;
 
 class UserController extends BaseController
 {
+  private function checkAccess()
+  {
+    if (!session()->get('logged_in')) {
+      return redirect()->to('/login');
+    }
+    $role = session('role');
+    if ($role !== 'ADMIN') {
+      return redirect()->to('/')->with('error', 'Akses ditolak. Hanya Admin yang dapat mengakses manajemen user.');
+    }
+    return null;
+  }
+
   public function index()
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $model = new UserModel();
     $data['users'] = $model->select('id, username, role')->findAll();
     $data['title'] = 'Manajemen User';
@@ -18,12 +32,16 @@ class UserController extends BaseController
 
   public function create()
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $data['title'] = 'Tambah User';
     return view('user/create', $data);
   }
 
   public function store()
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $validation =  \Config\Services::validation();
     $validation->setRules([
       'username' => 'required|min_length[3]',
@@ -49,6 +67,8 @@ class UserController extends BaseController
 
   public function edit($id)
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $model = new UserModel();
     $user = $model->find($id);
     if (!$user) {
@@ -61,6 +81,8 @@ class UserController extends BaseController
 
   public function update($id)
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $validation =  \Config\Services::validation();
     $validation->setRules([
       'username' => 'required|min_length[3]',
@@ -91,6 +113,8 @@ class UserController extends BaseController
 
   public function delete($id)
   {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
     $model = new UserModel();
     $model->delete($id);
     return redirect()->to('/user')->with('success', 'User berhasil dihapus');

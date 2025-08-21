@@ -18,7 +18,7 @@
 </style>
 <div class="container mt-4">
   <h2>Manajemen Kegiatan</h2>
-  <?php if ($canManage): ?>
+  <?php if (in_array($currentRole, ['ADMIN', 'IPDS', 'SUBJECT_MATTER'])): ?>
     <a href="<?= base_url('kegiatan/create') ?>" class="btn btn-primary mb-3">
       <i class="fas fa-plus"></i> Tambah Kegiatan
     </a>
@@ -31,7 +31,8 @@
         <th>Bulan</th>
         <th>Tanggal Batas Cetak</th>
         <th>Status</th>
-        <?php if ($canManage): ?><th>Aksi</th><?php endif; ?>
+        <th>Dibuat oleh</th>
+        <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
@@ -42,19 +43,36 @@
           <td><?= esc($item['bulan']) ?></td>
           <td><?= esc($item['tanggal_batas_cetak']) ?></td>
           <td><?= esc($item['status']) ?></td>
-          <?php if ($canManage): ?>
-            <td>
+          <td><?= esc($userMap[$item['id_user']] ?? 'Unknown') ?></td>
+          <td>
+            <a href="<?= base_url('kegiatan/detail/' . $item['id']) ?>" class="btn btn-sm btn-info btn-action" title="Detail">
+              <i class="fas fa-eye"></i>
+            </a>
+            <?php
+            // Cek apakah user bisa mengedit/hapus kegiatan ini
+            $canManageThis = false;
+            if (in_array($currentRole, ['ADMIN', 'IPDS'])) {
+              $canManageThis = true; // Admin dan IPDS bisa manage semua kegiatan
+            } elseif ($currentRole === 'SUBJECT_MATTER' && $item['id_user'] === $currentUserId) {
+              $canManageThis = true; // Subject Matter hanya bisa manage kegiatan miliknya
+            }
+            ?>
+            <?php if ($canManageThis): ?>
               <a href="<?= base_url('kegiatan/edit/' . $item['id']) ?>" class="btn btn-sm btn-warning btn-action" title="Edit">
                 <i class="fas fa-edit"></i>
               </a>
-              <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['id']) ?>" class="btn btn-sm btn-info btn-action" title="Kelola Peta Wilkerstat">
-                <i class="fas fa-map"></i>
-              </a>
+              <?php if (in_array($currentRole, ['ADMIN', 'IPDS'])): ?>
+                <a href="<?= base_url('kelola-peta-wilkerstat/' . $item['id']) ?>" class="btn btn-sm btn-success btn-action" title="Kelola Peta Wilkerstat">
+                  <i class="fas fa-map"></i>
+                </a>
+              <?php endif; ?>
               <a href="#" class="btn btn-sm btn-danger btn-delete btn-action" data-url="<?= base_url('kegiatan/delete/' . $item['id']) ?>" title="Hapus">
                 <i class="fas fa-trash"></i>
               </a>
-            </td>
-          <?php endif; ?>
+            <?php elseif ($currentRole === 'SUBJECT_MATTER' && $item['id_user'] !== $currentUserId): ?>
+              <small class="text-muted">Dibuat oleh: <?= esc($userMap[$item['id_user']] ?? 'Unknown') ?></small>
+            <?php endif; ?>
+          </td>
         </tr>
       <?php endforeach; ?>
     </tbody>

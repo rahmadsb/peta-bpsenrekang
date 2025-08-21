@@ -51,11 +51,17 @@
     </div>
     <div class="mb-3">
       <label for="status" class="form-label">Status</label>
-      <select class="form-control<?= isset($validation) && $validation->hasError('status') ? ' is-invalid' : '' ?>" id="status" name="status" required>
-        <?php foreach ($statusList as $status): ?>
-          <option value="<?= $status ?>" <?= old('status', $kegiatan['status']) == $status ? 'selected' : '' ?>><?= $status ?></option>
-        <?php endforeach; ?>
-      </select>
+      <?php if (isset($canChangeStatus) && $canChangeStatus): ?>
+        <select class="form-control<?= isset($validation) && $validation->hasError('status') ? ' is-invalid' : '' ?>" id="status" name="status" required>
+          <?php foreach ($statusList as $status): ?>
+            <option value="<?= $status ?>" <?= old('status', $kegiatan['status']) == $status ? 'selected' : '' ?>><?= $status ?></option>
+          <?php endforeach; ?>
+        </select>
+      <?php else: ?>
+        <input type="text" class="form-control" value="<?= esc($kegiatan['status']) ?>" readonly>
+        <input type="hidden" name="status" value="<?= esc($kegiatan['status']) ?>">
+        <small class="form-text text-muted">Anda tidak memiliki akses untuk mengubah status kegiatan.</small>
+      <?php endif; ?>
       <?php if (isset($validation) && $validation->hasError('status')): ?>
         <div class="invalid-feedback">
           <?= $validation->getError('status') ?>

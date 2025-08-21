@@ -8,10 +8,12 @@
     min-width: 32px;
     padding: 0.25rem 0.4rem;
   }
+
   .btn-action:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
+
   .btn-action i {
     font-size: 0.875rem;
   }

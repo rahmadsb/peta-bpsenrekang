@@ -29,7 +29,7 @@ class AuthController extends BaseController
         'role' => $user['role'],
         'logged_in' => true
       ]);
-      return redirect()->to('/admin');
+      return redirect()->to('/');
     } else {
       $session->setFlashdata('error', 'Username atau password salah');
       return redirect()->to('/login');

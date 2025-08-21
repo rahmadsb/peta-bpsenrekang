@@ -14,7 +14,8 @@ class OpsiKegiatanController extends BaseController
       return redirect()->to('/login');
     }
     $role = session('role');
-    if ($role !== 'ADMIN' && $role !== 'IPDS') {
+    if ($role !== 'ADMIN') {
+      session()->setFlashdata('error', 'Anda tidak memiliki akses untuk fitur ini.');
       return redirect()->to('/');
     }
     return null;

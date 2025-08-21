@@ -11,7 +11,6 @@ $routes->post('login', 'AuthController::loginPost');
 $routes->get('logout', 'AuthController::logout');
 $routes->get('/', 'Dashboard::index');
 $routes->group('', ['filter' => 'auth'], function ($routes) {
-  $routes->get('/', 'Dashboard::admin');
   $routes->get('admin', 'Dashboard::admin');
   $routes->get('ipds', 'Dashboard::ipds');
   $routes->get('user', 'UserController::index');
@@ -68,6 +67,7 @@ $routes->get('opsi-kegiatan/delete/(:segment)', 'OpsiKegiatanController::delete/
 $routes->get('kegiatan', 'KegiatanController::index');
 $routes->get('kegiatan/create', 'KegiatanController::create');
 $routes->post('kegiatan/store', 'KegiatanController::store');
+$routes->get('kegiatan/detail/(:segment)', 'KegiatanController::detail/$1');
 $routes->get('kegiatan/edit/(:segment)', 'KegiatanController::edit/$1');
 $routes->post('kegiatan/update/(:segment)', 'KegiatanController::update/$1');
 $routes->get('kegiatan/delete/(:segment)', 'KegiatanController::delete/$1');

@@ -18,18 +18,20 @@
 </style>
 <div class="container-fluid">
   <h1><?= $title ?></h1>
-  <a href="<?= base_url('blok-sensus/create') ?>" class="btn btn-primary mb-3">
-    <i class="fas fa-plus"></i> Tambah Blok Sensus
-  </a>
-  <a href="<?= base_url('blok-sensus/export-excel') ?>" class="btn btn-success mb-3">
-    <i class="fas fa-file-excel"></i> Ekspor Excel
-  </a>
-  <form action="<?= base_url('blok-sensus/import-excel') ?>" method="post" enctype="multipart/form-data" class="d-inline">
-    <input type="file" name="excel_file" required>
-    <button type="submit" class="btn btn-info mb-3">
-      <i class="fas fa-file-import"></i> Impor Excel
-    </button>
-  </form>
+  <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+    <a href="<?= base_url('blok-sensus/create') ?>" class="btn btn-primary mb-3">
+      <i class="fas fa-plus"></i> Tambah Blok Sensus
+    </a>
+    <a href="<?= base_url('blok-sensus/export-excel') ?>" class="btn btn-success mb-3">
+      <i class="fas fa-file-excel"></i> Ekspor Excel
+    </a>
+    <form action="<?= base_url('blok-sensus/import-excel') ?>" method="post" enctype="multipart/form-data" class="d-inline">
+      <input type="file" name="excel_file" required>
+      <button type="submit" class="btn btn-info mb-3">
+        <i class="fas fa-file-import"></i> Impor Excel
+      </button>
+    </form>
+  <?php endif; ?>
   <table id="blokSensusTable" class="table table-bordered table-striped">
     <thead>
       <tr>
@@ -53,14 +55,16 @@
             <a href="<?= base_url('blok-sensus/detail/' . $bs['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
               <i class="fas fa-eye"></i>
             </a>
-            <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
-              <i class="fas fa-edit"></i>
-            </a>
-            <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
-              <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
-                <i class="fas fa-trash"></i>
-              </button>
-            </form>
+            <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+              <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
+                <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            <?php endif; ?>
           </td>
         </tr>
       <?php endforeach; ?>

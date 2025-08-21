@@ -35,25 +35,29 @@
             </p>
           </a>
         </li>
-        <li class="nav-item">
-          <a href="<?= base_url('user') ?>" class="nav-link<?= (strpos($currentPath, '/user') === 0) ? ' active' : '' ?>">
-            <i class="nav-icon fas fa-users"></i>
-            <p>Manajemen User</p>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="<?= base_url('opsi-kegiatan') ?>" class="nav-link<?= ($currentPath === '/opsi-kegiatan') ? ' active' : '' ?>">
-            <i class="nav-icon fas fa-tasks"></i>
-            <p>Opsi Kegiatan</p>
-          </a>
-        </li>
+        <?php if (session('role') === 'ADMIN'): ?>
+          <li class="nav-item">
+            <a href="<?= base_url('user') ?>" class="nav-link<?= (strpos($currentPath, '/user') === 0) ? ' active' : '' ?>">
+              <i class="nav-icon fas fa-users"></i>
+              <p>Manajemen User</p>
+            </a>
+          </li>
+        <?php endif; ?>
+        <?php if (session('role') === 'ADMIN'): ?>
+          <li class="nav-item">
+            <a href="<?= base_url('opsi-kegiatan') ?>" class="nav-link<?= ($currentPath === '/opsi-kegiatan') ? ' active' : '' ?>">
+              <i class="nav-icon fas fa-tasks"></i>
+              <p>Opsi Kegiatan</p>
+            </a>
+          </li>
+        <?php endif; ?>
         <li class="nav-item">
           <a href="<?= base_url('kegiatan') ?>" class="nav-link<?= ($currentPath === '/kegiatan') ? ' active' : '' ?>">
             <i class="nav-icon fas fa-calendar-check"></i>
             <p>Manajemen Kegiatan</p>
           </a>
         </li>
-        <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+        <?php if (in_array(session('role'), ['ADMIN', 'IPDS', 'SUBJECT_MATTER', 'GUEST'])): ?>
           <li class="nav-item has-treeview<?= (strpos($currentUrl, base_url('blok-sensus')) === 0 || strpos($currentUrl, base_url('sls')) === 0 || strpos($currentUrl, base_url('desa')) === 0) ? ' menu-open' : '' ?>">
             <a href="#" class="nav-link<?= (strpos($currentUrl, base_url('blok-sensus')) === 0 || strpos($currentUrl, base_url('sls')) === 0 || strpos($currentUrl, base_url('desa')) === 0) ? ' active' : '' ?>">
               <i class="nav-icon fas fa-map"></i>

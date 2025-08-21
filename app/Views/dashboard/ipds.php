@@ -1,94 +1,137 @@
-<?php
-$this->extend('index');
-$this->section('content');
-?>
+<?= $this->extend('index') ?>
 
+<?= $this->section('content') ?>
+<style>
+  /* Chart container styling */
+  #statusChart {
+    max-height: 400px;
+    width: 100% !important;
+  }
+
+  /* Dashboard card improvements */
+  .dashboard-card {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
 <div class="container-fluid">
-  <div class="row">
-    <!-- Data Statistik -->
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-info">
-        <div class="inner">
-          <h3>120</h3>
-          <p>Permintaan Data</p>
+  <h1>Dashboard IPDS</h1>
+  <div class="row mt-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-primary h-100 dashboard-card">
+        <div class="card-body text-center">
+          <h5 class="card-title">Total Kegiatan</h5>
+          <h2><?= $totalKegiatan ?></h2>
         </div>
-        <div class="icon">
-          <i class="fas fa-database"></i>
-        </div>
-        <a href="#" class="small-box-footer">Lihat detail <i class="fas fa-arrow-circle-right"></i></a>
       </div>
     </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-success">
-        <div class="inner">
-          <h3>85</h3>
-          <p>Data Terkirim</p>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-secondary h-100 dashboard-card">
+        <div class="card-body text-center">
+          <h5 class="card-title">Blok Sensus</h5>
+          <h2><?= $totalBlok ?></h2>
         </div>
-        <div class="icon">
-          <i class="fas fa-paper-plane"></i>
-        </div>
-        <a href="#" class="small-box-footer">Lihat detail <i class="fas fa-arrow-circle-right"></i></a>
       </div>
     </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-warning">
-        <div class="inner">
-          <h3>10</h3>
-          <p>Permintaan Diproses</p>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-warning h-100 dashboard-card">
+        <div class="card-body text-center">
+          <h5 class="card-title">SLS</h5>
+          <h2><?= $totalSls ?></h2>
         </div>
-        <div class="icon">
-          <i class="fas fa-spinner"></i>
-        </div>
-        <a href="#" class="small-box-footer">Lihat detail <i class="fas fa-arrow-circle-right"></i></a>
       </div>
     </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-danger">
-        <div class="inner">
-          <h3>5</h3>
-          <p>Permintaan Ditolak</p>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-dark h-100 dashboard-card">
+        <div class="card-body text-center">
+          <h5 class="card-title">Desa</h5>
+          <h2><?= $totalDesa ?></h2>
         </div>
-        <div class="icon">
-          <i class="fas fa-times-circle"></i>
-        </div>
-        <a href="#" class="small-box-footer">Lihat detail <i class="fas fa-arrow-circle-right"></i></a>
       </div>
     </div>
   </div>
-  <!-- /.row -->
-
-  <div class="card mt-4">
-    <div class="card-header">
-      <h3 class="card-title">Aktivitas Terbaru</h3>
-    </div>
-    <div class="card-body">
-      <ul>
-        <li>Permintaan data <b>#2024-001</b> telah dikirim ke <b>BPS Pusat</b>.</li>
-        <li>Data <b>Statistik Kependudukan 2023</b> berhasil diunduh.</li>
-        <li>Permintaan data <b>#2024-002</b> sedang diproses.</li>
-        <li>Permintaan data <b>#2024-003</b> ditolak karena dokumen tidak lengkap.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card mt-4">
-    <div class="card-header">
-      <h3 class="card-title">Ajukan Permintaan Data Baru</h3>
-    </div>
-    <div class="card-body">
-      <form>
-        <div class="form-group">
-          <label for="judulPermintaan">Judul Permintaan</label>
-          <input type="text" class="form-control" id="judulPermintaan" placeholder="Masukkan judul permintaan">
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Status Kegiatan</h5>
         </div>
-        <div class="form-group">
-          <label for="deskripsiPermintaan">Deskripsi</label>
-          <textarea class="form-control" id="deskripsiPermintaan" rows="3" placeholder="Jelaskan kebutuhan data Anda"></textarea>
+        <div class="card-body">
+          <canvas id="statusChart"></canvas>
         </div>
-        <button type="submit" class="btn btn-primary">Ajukan Permintaan</button>
-      </form>
+      </div>
     </div>
   </div>
 </div>
-
-<?= $this->endSection(); ?>
+<!-- jQuery -->
+<script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>
+<!-- jQuery UI 1.11.4 -->
+<script src=<?= base_url("plugins/jquery-ui/jquery-ui.min.js") ?>></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+  $.widget.bridge('uibutton', $.ui.button)
+</script>
+<!-- Bootstrap 4 -->
+<script src=<?= base_url("plugins/bootstrap/js/bootstrap.bundle.min.js") ?>></script>
+<!-- ChartJS -->
+<script src=<?= base_url("plugins/chart.js/Chart.min.js") ?>></script>
+<!-- Sparkline -->
+<script src=<?= base_url("plugins/sparklines/sparkline.js") ?>></script>
+<!-- JQVMap -->
+<script src=<?= base_url("plugins/jqvmap/jquery.vmap.min.js") ?>></script>
+<script src=<?= base_url("plugins/jqvmap/maps/jquery.vmap.usa.js") ?>></script>
+<!-- jQuery Knob Chart -->
+<script src=<?= base_url("plugins/jquery-knob/jquery.knob.min.js") ?>></script>
+<!-- daterangepicker -->
+<script src=<?= base_url("plugins/moment/moment.min.js") ?>></script>
+<script src=<?= base_url("plugins/daterangepicker/daterangepicker.js") ?>></script>
+<!-- Tempusdominus Bootstrap 4 -->
+<script src=<?= base_url("plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js") ?>></script>
+<!-- Summernote -->
+<script src=<?= base_url("plugins/summernote/summernote-bs4.min.js") ?>></script>
+<!-- overlayScrollbars -->
+<script src=<?= base_url("plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js") ?>></script>
+<!-- AdminLTE App -->
+<script src=<?= base_url("js/adminlte.js") ?>></script>
+<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<script src=<?= base_url("js/pages/dashboard.js") ?>></script>
+<!-- Datatables -->
+<script src="<?= base_url('plugins/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
+<!-- SweetAlert2 -->
+<script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+<script>
+  const ctx = document.getElementById('statusChart').getContext('2d');
+  const statusChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode($statusList) ?>,
+      datasets: [{
+        label: 'Jumlah Kegiatan',
+        data: <?= json_encode(array_values($kegiatanPerStatus)) ?>,
+        backgroundColor: [
+          '#007bff', '#28a745', '#ffc107', '#17a2b8', '#343a40'
+        ],
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+<?= $this->endSection() ?>

@@ -51,10 +51,7 @@
     </div>
     <div class="mb-3">
       <label class="form-label">Status</label>
-      <input type="text" class="form-control" value="<?php
-                                                      $role = session('role');
-                                                      echo $role === 'SUBJECT_MATTER' ? 'digunakan (SM)' : 'disiapkan (IPDS)';
-                                                      ?>" readonly>
+      <input type="text" class="form-control" value="disiapkan (IPDS)" readonly>
     </div>
     <!-- Tombol download template dan upload file import wilkerstat -->
     <div class="mb-3">

@@ -19,8 +19,21 @@ class BlokSensusController extends BaseController
       return redirect()->to('/login');
     }
     $role = session('role');
-    if ($role !== 'ADMIN' && $role !== 'IPDS') {
+    if (!in_array($role, ['ADMIN', 'IPDS', 'SUBJECT_MATTER', 'GUEST'])) {
       return redirect()->to('/');
+    }
+    return null;
+  }
+
+  private function checkManageAccess()
+  {
+    if (!session()->get('logged_in')) {
+      return redirect()->to('/login');
+    }
+    $role = session('role');
+    if ($role !== 'ADMIN' && $role !== 'IPDS') {
+      session()->setFlashdata('error', 'Anda tidak memiliki akses untuk melakukan operasi ini.');
+      return redirect()->to('/blok-sensus');
     }
     return null;
   }
@@ -36,14 +49,14 @@ class BlokSensusController extends BaseController
 
   public function create()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $data['title'] = 'Tambah Blok Sensus';
     return view('blok_sensus/create', $data);
   }
 
   public function store()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $validation = \Config\Services::validation();
     $validation->setRules([
       'kode_bs' => 'required|is_unique[blok_sensus.kode_bs]',
@@ -63,7 +76,7 @@ class BlokSensusController extends BaseController
 
   public function edit($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new BlokSensusModel();
     $blok = $model->find($uuid);
     if (!$blok) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
@@ -74,7 +87,7 @@ class BlokSensusController extends BaseController
 
   public function update($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $validation = \Config\Services::validation();
     $validation->setRules([
       'kode_bs' => 'required',
@@ -95,7 +108,7 @@ class BlokSensusController extends BaseController
 
   public function delete($uuid)
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new BlokSensusModel();
     $model->delete($uuid);
     return redirect()->to('/blok-sensus')->with('success', 'Blok sensus berhasil dihapus');
@@ -103,7 +116,7 @@ class BlokSensusController extends BaseController
 
   public function exportExcel()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     $model = new BlokSensusModel();
     $data = $model->findAll();
 
@@ -150,7 +163,7 @@ class BlokSensusController extends BaseController
 
   public function importExcel()
   {
-    if ($redirect = $this->checkAccess()) return $redirect;
+    if ($redirect = $this->checkManageAccess()) return $redirect;
     // Implementasi impor Excel di sini
   }
 

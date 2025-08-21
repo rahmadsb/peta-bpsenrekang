@@ -125,15 +125,19 @@
                         <div class="d-flex align-items-center justify-content-between mb-2">
                           <span class="badge badge-info badge-sm">📍 <?= $labelPeta ?></span>
                           <!-- Upload peta utama -->
-                          <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="id_kegiatan" value="<?= esc($kegiatan['id']) ?>">
-                            <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
-                            <input type="hidden" name="id_wilkerstat" value="<?= esc($ws['id']) ?>">
-                            <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
-                            <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" multiple required class="form-control form-control-sm mr-2 input-preview-files" style="max-width: 180px;">
-                            <button type="submit" class="btn btn-primary btn-sm">📤 Upload</button>
-                          </form>
+                          <?php if (empty($petaUtama)): ?>
+                            <form action="<?= base_url('kelola-peta-wilkerstat/upload') ?>" method="post" enctype="multipart/form-data" class="d-flex align-items-center">
+                              <?= csrf_field() ?>
+                              <input type="hidden" name="id_kegiatan" value="<?= esc($kegiatan['id']) ?>">
+                              <input type="hidden" name="wilkerstat_type" value="<?= str_replace('-', '_', $type) ?>">
+                              <input type="hidden" name="id_wilkerstat" value="<?= esc($ws['id']) ?>">
+                              <input type="hidden" name="jenis_peta" value="<?= $jenis ?>">
+                              <input type="file" name="peta_files[]" accept=".jpg,.jpeg,.png" required class="form-control form-control-sm mr-2 input-preview-files" style="max-width: 180px;">
+                              <button type="submit" class="btn btn-primary btn-sm">📤 Upload Peta Utama</button>
+                            </form>
+                          <?php else: ?>
+                            <small class="text-success">✅ Peta utama sudah ada</small>
+                          <?php endif; ?>
                         </div>
                         <div class="preview-files mb-2" style="font-size:85%;color:#666;"></div>
                         <ul class="list-group list-group-flush">
@@ -453,17 +457,25 @@
       $(target).find('table.dataTable').DataTable().columns.adjust().draw();
     });
   });
-  // Preview nama file yang dipilih pada input file (multi-upload)
+  // Preview nama file yang dipilih pada input file
   $(document).on('change', '.input-preview-files', function() {
     var files = this.files;
     var preview = $(this).closest('form').find('.preview-files');
+    var isMultiple = $(this).attr('multiple') !== undefined;
+
     if (files.length > 0) {
-      var list = '<ul style="margin-bottom:0;padding-left:18px">';
-      for (var i = 0; i < files.length; i++) {
-        list += '<li>' + files[i].name + '</li>';
+      if (isMultiple) {
+        // Multiple files (untuk inset)
+        var list = '<ul style="margin-bottom:0;padding-left:18px">';
+        for (var i = 0; i < files.length; i++) {
+          list += '<li>' + files[i].name + '</li>';
+        }
+        list += '</ul>';
+        preview.html(list);
+      } else {
+        // Single file (untuk peta utama)
+        preview.html('<span class="text-info">📄 ' + files[0].name + '</span>');
       }
-      list += '</ul>';
-      preview.html(list);
     } else {
       preview.html('');
     }

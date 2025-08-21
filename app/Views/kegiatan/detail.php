@@ -59,7 +59,7 @@
 
 <div class="container-fluid">
   <div class="row mb-3">
-    <div class="col-12">
+    <div class="col-12 d-flex justify-content-between align-items-center">
       <a href="<?= base_url('kegiatan') ?>" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Kembali
       </a>
@@ -118,6 +118,21 @@
           </table>
         </div>
       </div>
+
+      <!-- Download Button Section -->
+      <?php if (session('role') === 'ADMIN' || session('role') === 'IPDS' || (session('role') === 'SUBJECT_MATTER' && $is_owner)): ?>
+        <div class="card-footer bg-light border-top">
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <small class="text-muted">
+              <i class="fas fa-download"></i> Download semua file peta yang terkait dengan kegiatan ini
+            </small>
+            <a href="<?= base_url('kelola-peta-wilkerstat/download-all/' . $kegiatan['id']) ?>"
+              class="btn btn-success btn-sm">
+              <i class="fas fa-download me-1"></i> Download Semua Peta
+            </a>
+          </div>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 

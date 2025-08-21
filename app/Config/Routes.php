@@ -52,6 +52,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
   $routes->get('kelola-peta-wilkerstat/(:segment)', 'KelolaPetaWilkerstatController::index/$1');
   $routes->post('kelola-peta-wilkerstat/upload', 'KelolaPetaWilkerstatController::upload');
   $routes->get('kelola-peta-wilkerstat/download/(:segment)', 'KelolaPetaWilkerstatController::download/$1');
+  $routes->get('kelola-peta-wilkerstat/download-all/(:segment)', 'KelolaPetaWilkerstatController::downloadAllPeta/$1');
   $routes->post('kelola-peta-wilkerstat/delete/(:segment)', 'KelolaPetaWilkerstatController::delete/$1');
   $routes->post('kelola-peta-wilkerstat/replace/(:segment)', 'KelolaPetaWilkerstatController::replace/$1');
   $routes->post('kelola-peta-wilkerstat/rename/(:segment)', 'KelolaPetaWilkerstatController::rename/$1');

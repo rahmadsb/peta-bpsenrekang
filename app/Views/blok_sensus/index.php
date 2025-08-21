@@ -5,6 +5,7 @@
   .btn-action {
     margin-right: 2px;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
   }
 
   .btn-action:hover {
@@ -14,6 +15,59 @@
 
   .btn-action i {
     font-size: 0.875rem;
+  }
+
+  /* Responsive table wrapper */
+  .table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  /* Table styling improvements */
+  #blokSensusTable {
+    min-width: 700px;
+    margin-bottom: 0;
+  }
+
+  #blokSensusTable th,
+  #blokSensusTable td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* Action buttons container */
+  .action-buttons {
+    display: flex;
+    gap: 2px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  /* Mobile specific adjustments */
+  @media (max-width: 767.98px) {
+    .container-fluid {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .table-responsive-wrapper {
+      margin-left: -10px;
+      margin-right: -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    #blokSensusTable th,
+    #blokSensusTable td {
+      font-size: 0.875rem;
+      padding: 0.5rem;
+    }
+
+    .btn-action {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
   }
 </style>
 <div class="container-fluid">
@@ -32,44 +86,48 @@
       </button>
     </form>
   <?php endif; ?>
-  <table id="blokSensusTable" class="table table-bordered table-striped">
-    <thead>
-      <tr>
-        <th>Kode BS</th>
-        <th>Nama BS</th>
-        <th>Nama SLS</th>
-        <th>Nama Desa</th>
-        <th>Kecamatan</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($blokSensus as $bs): ?>
+  <div class="table-responsive-wrapper">
+    <table id="blokSensusTable" class="table table-bordered table-striped">
+      <thead>
         <tr>
-          <td><?= esc($bs['kode_bs']) ?></td>
-          <td><?= esc($bs['nama_bs']) ?></td>
-          <td><?= esc($bs['nama_sls']) ?></td>
-          <td><?= esc($bs['nama_desa']) ?></td>
-          <td><?= esc($bs['nama_kecamatan']) ?></td>
-          <td>
-            <a href="<?= base_url('blok-sensus/detail/' . $bs['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
-              <i class="fas fa-eye"></i>
-            </a>
-            <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
-              <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
-                <i class="fas fa-edit"></i>
-              </a>
-              <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
-                <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
-            <?php endif; ?>
-          </td>
+          <th>Kode BS</th>
+          <th>Nama BS</th>
+          <th>Nama SLS</th>
+          <th>Nama Desa</th>
+          <th>Kecamatan</th>
+          <th>Aksi</th>
         </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <?php foreach ($blokSensus as $bs): ?>
+          <tr>
+            <td><?= esc($bs['kode_bs']) ?></td>
+            <td><?= esc($bs['nama_bs']) ?></td>
+            <td><?= esc($bs['nama_sls']) ?></td>
+            <td><?= esc($bs['nama_desa']) ?></td>
+            <td><?= esc($bs['nama_kecamatan']) ?></td>
+            <td>
+              <div class="action-buttons">
+                <a href="<?= base_url('blok-sensus/detail/' . $bs['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+                  <a href="<?= base_url('blok-sensus/edit/' . $bs['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
+                    <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                <?php endif; ?>
+              </div>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>

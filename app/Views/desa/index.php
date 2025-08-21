@@ -5,6 +5,7 @@
   .btn-action {
     margin-right: 2px;
     transition: all 0.2s ease-in-out;
+    white-space: nowrap;
   }
 
   .btn-action:hover {
@@ -14,6 +15,59 @@
 
   .btn-action i {
     font-size: 0.875rem;
+  }
+
+  /* Responsive table wrapper */
+  .table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  /* Table styling improvements */
+  #desaTable {
+    min-width: 500px;
+    margin-bottom: 0;
+  }
+
+  #desaTable th,
+  #desaTable td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* Action buttons container */
+  .action-buttons {
+    display: flex;
+    gap: 2px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  /* Mobile specific adjustments */
+  @media (max-width: 767.98px) {
+    .container-fluid {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .table-responsive-wrapper {
+      margin-left: -10px;
+      margin-right: -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    #desaTable th,
+    #desaTable td {
+      font-size: 0.875rem;
+      padding: 0.5rem;
+    }
+
+    .btn-action {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
   }
 </style>
 <div class="container-fluid">
@@ -32,40 +86,42 @@
       </button>
     </form>
   <?php endif; ?>
-  <table id="desaTable" class="table table-bordered table-striped">
-    <thead>
-      <tr>
-        <th>Kode Desa</th>
-        <th>Nama Desa</th>
-        <th>Kecamatan</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($desa as $row): ?>
+  <div class="table-responsive-wrapper">
+    <table id="desaTable" class="table table-bordered table-striped">
+      <thead>
         <tr>
-          <td><?= esc($row['kode_desa']) ?></td>
-          <td><?= esc($row['nama_desa']) ?></td>
-          <td><?= esc($row['nama_kecamatan']) ?></td>
-          <td>
-            <a href="<?= base_url('desa/detail/' . $row['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
-              <i class="fas fa-eye"></i>
-            </a>
-            <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
-              <a href="<?= base_url('desa/edit/' . $row['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
-                <i class="fas fa-edit"></i>
-              </a>
-              <form action="<?= base_url('desa/delete/' . $row['id']) ?>" method="post" class="d-inline delete-form">
-                <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
-            <?php endif; ?>
-          </td>
+          <th>Kode Desa</th>
+          <th>Nama Desa</th>
+          <th>Kecamatan</th>
+          <th>Aksi</th>
         </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <?php foreach ($desa as $row): ?>
+          <tr>
+            <td><?= esc($row['kode_desa']) ?></td>
+            <td><?= esc($row['nama_desa']) ?></td>
+            <td><?= esc($row['nama_kecamatan']) ?></td>
+            <td>
+              <a href="<?= base_url('desa/detail/' . $row['id']) ?>" class="btn btn-info btn-sm btn-action" title="Detail">
+                <i class="fas fa-eye"></i>
+              </a>
+              <?php if (in_array(session('role'), ['ADMIN', 'IPDS'])): ?>
+                <a href="<?= base_url('desa/edit/' . $row['id']) ?>" class="btn btn-warning btn-sm btn-action" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="<?= base_url('desa/delete/' . $row['id']) ?>" method="post" class="d-inline delete-form">
+                  <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>

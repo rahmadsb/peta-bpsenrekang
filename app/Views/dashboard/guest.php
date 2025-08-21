@@ -11,17 +11,91 @@
   /* Dashboard card improvements */
   .dashboard-card {
     transition: transform 0.2s ease-in-out;
+    min-height: 120px;
   }
 
   .dashboard-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+
+  /* Responsive card body */
+  .dashboard-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .dashboard-card .card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .dashboard-card h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 575.98px) {
+    .dashboard-card .card-title {
+      font-size: 0.8rem;
+    }
+
+    .dashboard-card h2 {
+      font-size: 1.5rem;
+    }
+
+    .dashboard-card {
+      min-height: 100px;
+    }
+
+    .dashboard-card .card-body {
+      padding: 0.75rem;
+    }
+  }
+
+  @media (min-width: 576px) and (max-width: 767.98px) {
+    .dashboard-card .card-title {
+      font-size: 0.85rem;
+    }
+
+    .dashboard-card h2 {
+      font-size: 1.6rem;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    .dashboard-card .card-title {
+      font-size: 0.9rem;
+    }
+
+    .dashboard-card h2 {
+      font-size: 1.7rem;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .dashboard-card .card-title {
+      font-size: 1rem;
+    }
+
+    .dashboard-card h2 {
+      font-size: 2rem;
+    }
+  }
 </style>
 <div class="container-fluid">
   <h1>Dashboard Guest</h1>
   <div class="row mt-4">
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-sm-6 col-md-3 mb-3">
       <div class="card text-white bg-primary h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Total Kegiatan</h5>
@@ -29,7 +103,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-sm-6 col-md-3 mb-3">
       <div class="card text-white bg-success h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Total Peta</h5>
@@ -37,7 +111,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-sm-6 col-md-3 mb-3">
       <div class="card text-white bg-warning h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">SLS</h5>
@@ -45,7 +119,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
+    <div class="col-6 col-sm-6 col-md-3 mb-3">
       <div class="card text-white bg-dark h-100 dashboard-card">
         <div class="card-body text-center">
           <h5 class="card-title">Desa</h5>

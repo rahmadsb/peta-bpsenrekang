@@ -69,7 +69,7 @@ class DesaController extends BaseController
     }
     $model = new DesaModel();
     $data = $this->request->getPost();
-    $data['uuid'] = Uuid::uuid4()->toString();
+    $data['id'] = Uuid::uuid4()->toString();
     $model->insert($data);
     return redirect()->to('/desa')->with('success', 'Desa berhasil ditambahkan');
   }

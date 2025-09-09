@@ -116,7 +116,8 @@
                     <i class="fas fa-edit"></i>
                   </a>
                   <form action="<?= base_url('blok-sensus/delete/' . $bs['id']) ?>" method="post" class="d-inline delete-form">
-                    <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
+                    <input type="hidden" name="_method" value="post">
+                    <button type="submit" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
                       <i class="fas fa-trash"></i>
                     </button>
                   </form>
@@ -169,12 +170,15 @@
 <script>
   $(document).ready(function() {
     $('#blokSensusTable').DataTable();
-    $('.btn-delete').on('click', function(e) {
+
+    // Menggunakan event delegation karena DataTable dapat mereload konten
+    $(document).on('click', '.btn-delete', function(e) {
       e.preventDefault();
       const form = $(this).closest('form');
+
       Swal.fire({
-        title: 'Yakin hapus data?',
-        text: 'Data yang dihapus tidak dapat dikembalikan!',
+        title: 'Konfirmasi Hapus',
+        text: 'Apakah Anda yakin ingin menghapus Blok Sensus ini? Data yang dihapus tidak dapat dikembalikan!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',

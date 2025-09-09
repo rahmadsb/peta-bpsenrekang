@@ -69,7 +69,7 @@ class SlsController extends BaseController
     }
     $model = new SlsModel();
     $data = $this->request->getPost();
-    $data['uuid'] = Uuid::uuid4()->toString();
+    $data['id'] = Uuid::uuid4()->toString();
     $model->insert($data);
     return redirect()->to('/sls')->with('success', 'SLS berhasil ditambahkan');
   }

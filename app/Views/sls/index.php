@@ -113,8 +113,8 @@
                   <i class="fas fa-edit"></i>
                 </a>
                 <form action="<?= base_url('sls/delete/' . $row['id']) ?>" method="post" class="d-inline delete-form">
-                  <button type="button" class="btn btn-danger btn-sm btn-delete btn-action" title="Hapus">
-                    <i class="fas fa-trash"></i>
+                  <button type="submit" class="btn btn-danger btn-sm btn-action btn-delete" title="Hapus">
+                    <i class="fas fa-trash-alt"></i>
                   </button>
                 </form>
               <?php endif; ?>
@@ -165,12 +165,15 @@
 <script>
   $(document).ready(function() {
     $('#slsTable').DataTable();
-    $('.btn-delete').on('click', function(e) {
+
+    // Menggunakan event delegation untuk menangani klik tombol hapus
+    $(document).on('click', '.btn-delete', function(e) {
       e.preventDefault();
       const form = $(this).closest('form');
+
       Swal.fire({
-        title: 'Yakin hapus data?',
-        text: 'Data yang dihapus tidak dapat dikembalikan!',
+        title: 'Konfirmasi Hapus',
+        text: 'Apakah Anda yakin ingin menghapus SLS ini? Data yang dihapus tidak dapat dikembalikan!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',

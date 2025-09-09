@@ -70,7 +70,7 @@
     </div>
     <!-- Tombol download template dan upload file import wilkerstat -->
     <div class="mb-3">
-      <a href="<?= base_url('public/contoh_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>Download Template Import Wilkerstat</a>
+      <a href="<?= base_url('contoh_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>Download Template Import Wilkerstat</a>
       <div class="d-inline-block ms-2">
         <label for="file_import_wilkerstat" class="btn btn-info btn-sm mb-0">Import Wilkerstat dari Excel</label>
         <input type="file" name="file_import_wilkerstat" id="file_import_wilkerstat" accept=".xlsx,.xls" style="display:none;">

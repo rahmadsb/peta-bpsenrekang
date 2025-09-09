@@ -69,7 +69,7 @@ class BlokSensusController extends BaseController
     }
     $model = new BlokSensusModel();
     $data = $this->request->getPost();
-    $data['uuid'] = Uuid::uuid4()->toString();
+    $data['id'] = Uuid::uuid4()->toString();
     $model->insert($data);
     return redirect()->to('/blok-sensus')->with('success', 'Blok sensus berhasil ditambahkan');
   }

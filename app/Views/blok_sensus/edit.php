@@ -1,47 +1,95 @@
 <?php $this->extend('index'); ?>
 <?php $this->section('content'); ?>
-<div class="container-fluid">
-  <h1>Edit Blok Sensus</h1>
-  <form id="form-edit-blok-sensus" action="<?= base_url('blok-sensus/update/' . $blok['id']) ?>" method="post">
-    <div class="form-group">
-      <label>Kode BS</label>
-      <input type="text" name="kode_bs" class="form-control" value="<?= esc($blok['kode_bs']) ?>" required>
+<div class="container-fluid mt-4">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title">Edit Blok Sensus</h3>
     </div>
-    <div class="form-group">
-      <label>Nama BS</label>
-      <input type="text" name="nama_bs" class="form-control" value="<?= esc($blok['nama_bs']) ?>" required>
+    <div class="card-body">
+      <form id="form-edit-blok-sensus" action="<?= base_url('blok-sensus/update/' . $blok['id']) ?>" method="post">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="provinsi">Provinsi</label>
+              <select id="provinsi" class="form-control select2" name="nama_provinsi">
+                <option value="<?= esc($blok['nama_provinsi']) ?>" selected><?= esc($blok['nama_provinsi']) ?></option>
+              </select>
+              <input type="hidden" name="kode_prov" id="kode_prov" value="<?= esc($blok['kode_prov']) ?>">
+            </div>
+            <div class="form-group">
+              <label for="kabupaten">Kabupaten</label>
+              <select id="kabupaten" class="form-control select2" name="nama_kabupaten">
+                <option value="<?= esc($blok['nama_kabupaten']) ?>" selected><?= esc($blok['nama_kabupaten']) ?></option>
+              </select>
+              <input type="hidden" name="kode_kabupaten" id="kode_kabupaten" value="<?= esc($blok['kode_kabupaten']) ?>">
+            </div>
+            <div class="form-group">
+              <label for="kecamatan">Kecamatan</label>
+              <select id="kecamatan" class="form-control select2" name="nama_kecamatan">
+                <option value="<?= esc($blok['nama_kecamatan']) ?>" selected><?= esc($blok['nama_kecamatan']) ?></option>
+              </select>
+              <small class="text-muted">Pilih kecamatan yang sudah ada atau tambahkan baru</small>
+              <div class="mt-2" id="kecamatan-baru-container" style="display:none;">
+                <div class="input-group">
+                  <input type="text" id="kode_kecamatan_baru" placeholder="Kode Kecamatan Baru" class="form-control">
+                  <input type="text" id="nama_kecamatan_baru" placeholder="Nama Kecamatan Baru" class="form-control">
+                  <div class="input-group-append">
+                    <button type="button" id="tambah-kecamatan" class="btn btn-info btn-sm">Tambahkan</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="kode_kecamatan" id="kode_kecamatan" value="<?= esc($blok['kode_kecamatan']) ?>">
+            </div>
+            <div class="form-group">
+              <label for="desa">Desa/Kelurahan</label>
+              <select id="desa" class="form-control select2" name="nama_desa">
+                <option value="<?= esc($blok['nama_desa']) ?>" selected><?= esc($blok['nama_desa']) ?></option>
+              </select>
+              <small class="text-muted">Pilih desa yang sudah ada atau tambahkan baru</small>
+              <div class="mt-2" id="desa-baru-container" style="display:none;">
+                <div class="input-group">
+                  <input type="text" id="kode_desa_baru" placeholder="Kode Desa Baru" class="form-control">
+                  <input type="text" id="nama_desa_baru" placeholder="Nama Desa Baru" class="form-control">
+                  <div class="input-group-append">
+                    <button type="button" id="tambah-desa" class="btn btn-info btn-sm">Tambahkan</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="kode_desa" id="kode_desa" value="<?= esc($blok['kode_desa']) ?>">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="kode_sls">Kode SLS</label>
+              <input type="text" name="kode_sls" id="kode_sls" class="form-control" value="<?= esc($blok['kode_sls']) ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="nama_sls">Nama SLS</label>
+              <input type="text" name="nama_sls" id="nama_sls" class="form-control" value="<?= esc($blok['nama_sls']) ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="kode_bs">Kode BS</label>
+              <input type="text" name="kode_bs" id="kode_bs" class="form-control" value="<?= esc($blok['kode_bs']) ?>" required>
+            </div>
+            <div class="form-group">
+              <label for="nama_bs">Nama BS</label>
+              <input type="text" name="nama_bs" id="nama_bs" class="form-control" value="<?= esc($blok['nama_bs']) ?>" required>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <button type="submit" class="btn btn-primary float-right">
+              <i class="fas fa-save"></i> Simpan
+            </button>
+            <a href="<?= base_url('blok-sensus') ?>" class="btn btn-secondary float-right mr-2">
+              <i class="fas fa-times"></i> Batal
+            </a>
+          </div>
+        </div>
+      </form>
     </div>
-    <div class="form-group">
-      <label>Kode SLS</label>
-      <input type="text" name="kode_sls" class="form-control" value="<?= esc($blok['kode_sls']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Nama SLS</label>
-      <input type="text" name="nama_sls" class="form-control" value="<?= esc($blok['nama_sls']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Kode Desa</label>
-      <input type="text" name="kode_desa" class="form-control" value="<?= esc($blok['kode_desa']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Nama Desa</label>
-      <input type="text" name="nama_desa" class="form-control" value="<?= esc($blok['nama_desa']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Kecamatan</label>
-      <input type="text" name="nama_kecamatan" class="form-control" value="<?= esc($blok['nama_kecamatan']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Kabupaten</label>
-      <input type="text" name="nama_kabupaten" class="form-control" value="<?= esc($blok['nama_kabupaten']) ?>">
-    </div>
-    <div class="form-group">
-      <label>Provinsi</label>
-      <input type="text" name="nama_provinsi" class="form-control" value="<?= esc($blok['nama_provinsi']) ?>">
-    </div>
-    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-    <a href="<?= base_url('blok-sensus') ?>" class="btn btn-secondary">Batal</a>
-  </form>
+  </div>
 </div>
 <!-- jQuery -->
 <script src=<?= base_url("plugins/jquery/jquery.min.js") ?>></script>

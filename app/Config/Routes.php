@@ -84,7 +84,9 @@ $routes->get('preview-peta/(:any)', function ($filename) {
 
 $routes->get('subject-matter', 'Dashboard::subjectMatter');
 $routes->get('guest', 'Dashboard::guest');
+// Wilkerstat routes
 $routes->post('import-wilkerstat', 'ImportWilkerstatController::importWilkerstat');
+$routes->get('generate-wilkerstat-example', 'WilkerstatExampleController::generateExample');
 
 // API routes
 $routes->get('api/kabupaten', 'ApiController::kabupaten');

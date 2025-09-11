@@ -55,12 +55,12 @@
     </div>
     <!-- Tombol download template dan upload file import wilkerstat -->
     <div class="mb-3">
-      <a href="<?= base_url('contoh_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>Download Template Import Wilkerstat</a>
-      <div class="d-inline-block ms-2">
-        <label for="file_import_wilkerstat" class="btn btn-info btn-sm mb-0">Import Wilkerstat dari Excel</label>
-        <input type="file" name="file_import_wilkerstat" id="file_import_wilkerstat" accept=".xlsx,.xls" style="display:none;">
-      </div>
-      <div id="import-wilkerstat-error" class="text-danger mt-2" style="display:none;"></div>
+      <a href="<?= base_url('template_import_wilkerstat.xlsx') ?>" class="btn btn-success btn-sm" download>
+        <i class="fas fa-download mr-1"></i> Download Template Import
+      </a>
+      <button type="button" class="btn btn-info btn-sm btn-import-wilkerstat ml-2">
+        <i class="fas fa-file-import mr-1"></i> Import Wilkerstat dari Excel
+      </button>
     </div>
     <h4>Pilih Wilkerstat untuk Kegiatan Ini</h4>
     <ul class="nav nav-tabs" id="wilkerstatTab" role="tablist">
@@ -184,6 +184,8 @@
 <!-- daterangepicker -->
 <script src="<?= base_url('plugins/moment/moment.min.js') ?>"></script>
 <script src="<?= base_url('plugins/daterangepicker/daterangepicker.js') ?>"></script>
+<!-- SheetJS Excel Library -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- Tempusdominus Bootstrap 4 -->
 <script src=<?= base_url("plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js") ?>></script>
 <!-- Summernote -->
@@ -199,17 +201,23 @@
 <script src="<?= base_url('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
 <!-- SweetAlert2 -->
 <script src="<?= base_url('plugins/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+
+<!-- Global Variables -->
 <script>
-  $(document).ready(function() {
-    $('#table-desa').DataTable();
-  });
-  $(document).ready(function() {
-    $('#table-sls').DataTable();
-  });
-  $(document).ready(function() {
-    $('#table-blok-sensus').DataTable();
-  });
+  // Global variables for all scripts
+  var appBaseUrl = '<?= base_url() ?>';
+  var baseUrl = '<?= base_url() ?>';
+
+  // Initialize selection arrays
+  window.selectedBlokSensus = [];
+  window.selectedSls = [];
+  window.selectedDesa = [];
+  window.selected_bs = [];
+  window.selected_sls = [];
+  window.selected_desa = [];
 </script>
+
+<!-- Initialize DateRangePicker -->
 <script>
   $(function() {
     $('#tanggal_batas_cetak').daterangepicker({
@@ -221,162 +229,265 @@
     });
   });
 </script>
+
+<!-- Unified DataTable and Checkbox Management -->
 <script>
   $(function() {
-    // Array manual untuk menyimpan pilihan user
-    var selectedBlokSensus = [];
-    var selectedSls = [];
-    var selectedDesa = [];
-
-    var tableIds = [{
-        type: 'blok-sensus',
-        arr: selectedBlokSensus,
-        badge: '#count-blok-sensus'
+    // Configuration for each table
+    var tableConfigs = [{
+        tableId: '#table-blok-sensus',
+        type: 'bs',
+        counterId: '#count-blok-sensus',
+        selectedArray: 'selected_bs',
+        globalArray: 'selectedBlokSensus'
       },
       {
+        tableId: '#table-sls',
         type: 'sls',
-        arr: selectedSls,
-        badge: '#count-sls'
+        counterId: '#count-sls',
+        selectedArray: 'selected_sls',
+        globalArray: 'selectedSls'
       },
       {
+        tableId: '#table-desa',
         type: 'desa',
-        arr: selectedDesa,
-        badge: '#count-desa'
+        counterId: '#count-desa',
+        selectedArray: 'selected_desa',
+        globalArray: 'selectedDesa'
       }
     ];
 
-    tableIds.forEach(function(obj) {
-      var tableId = '#table-' + obj.type;
-      var badgeId = obj.badge;
-      // Gunakan array global by reference
-      var getArr = function() {
-        if (obj.type === 'blok-sensus') return selectedBlokSensus;
-        if (obj.type === 'sls') return selectedSls;
-        if (obj.type === 'desa') return selectedDesa;
-      };
-      var setArr = function(newArr) {
-        if (obj.type === 'blok-sensus') selectedBlokSensus = newArr;
-        if (obj.type === 'sls') selectedSls = newArr;
-        if (obj.type === 'desa') selectedDesa = newArr;
-      };
-      // Inisialisasi DataTable
-      var dt;
-      if (!$.fn.DataTable.isDataTable(tableId)) {
-        dt = $(tableId).DataTable({
-          paging: true,
-          searching: true,
-          ordering: true,
-          info: false,
-          lengthMenu: [10, 25, 50, 100],
-          columnDefs: [{
-            orderable: false,
-            targets: 0
-          }]
-        });
-      } else {
-        dt = $(tableId).DataTable();
-      }
-      // Update badge
-      function updateCount() {
-        $(badgeId).text(getArr().length + ' terpilih');
-      }
-      // Checkbox change handler
-      $(tableId).on('change', 'input[type=checkbox]', function() {
-        var arr = getArr();
-        var val = $(this).val();
-        if (this.checked) {
-          if (!arr.includes(val)) arr.push(val);
-        } else {
-          var idx = arr.indexOf(val);
-          if (idx !== -1) arr.splice(idx, 1);
+    // Custom sorting function for checkbox column - uses global arrays instead of DOM
+    $.fn.dataTable.ext.order['dom-checkbox'] = function(settings, col) {
+      const api = this.api();
+      let selectedArray = [];
+
+      // Safely get table ID
+      let tableId = '';
+      try {
+        if (settings && settings.sTable && settings.sTable.id) {
+          tableId = '#' + settings.sTable.id;
+        } else if (settings && settings.nTable) {
+          tableId = '#' + settings.nTable.id;
         }
-        setArr(arr);
-        updateCount();
+      } catch (e) {
+        console.warn('Could not determine table ID for sorting:', e);
+        return [];
+      }
+
+      // Determine which selection array to use based on table ID
+      if (tableId === '#table-blok-sensus') {
+        selectedArray = window.selected_bs || [];
+      } else if (tableId === '#table-sls') {
+        selectedArray = window.selected_sls || [];
+      } else if (tableId === '#table-desa') {
+        selectedArray = window.selected_desa || [];
+      }
+
+      return api.column(col, {
+        order: 'index'
+      }).data().map(function(cellData, index) {
+        // Extract checkbox value from the cell data
+        let checkboxValue = '';
+        try {
+          if (typeof cellData === 'string') {
+            const match = cellData.match(/value="([^"]+)"/);
+            checkboxValue = match ? match[1] : '';
+          }
+        } catch (e) {
+          console.warn('Error extracting checkbox value:', e);
+        }
+
+        // Return '1' if this item is in the selected array, '0' otherwise
+        return selectedArray.includes(checkboxValue) ? '1' : '0';
       });
-      // Pilih Semua tombol (hanya data yang tampil di halaman aktif, hapus dulu dari array)
-      $('.btn-select-all[data-table="table-' + obj.type + '"]').on('click', function() {
-        var arr = getArr();
-        // Ambil semua value di halaman aktif
-        var currentPageVals = [];
-        dt.rows({
+    };
+
+    // Initialize each DataTable with proper checkbox handling
+    tableConfigs.forEach(function(config) {
+      console.log('Initializing DataTable for:', config.tableId);
+
+      // Destroy existing DataTable if it exists
+      if ($.fn.DataTable.isDataTable(config.tableId)) {
+        console.log('Destroying existing DataTable for:', config.tableId);
+        $(config.tableId).DataTable().destroy();
+      }
+
+      var table = $(config.tableId).DataTable({
+        destroy: true,
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        lengthChange: true,
+        columnDefs: [{
+          targets: 0,
+          orderable: true,
+          orderDataType: 'dom-checkbox'
+        }],
+        drawCallback: function() {
+          // Sync checkboxes after each redraw
+          syncCheckboxes(config);
+        }
+      });
+
+      // Handle checkbox changes
+      $(config.tableId).on('change', 'input[type=checkbox]', function() {
+        var value = $(this).val();
+        var isChecked = $(this).prop('checked');
+
+        if (isChecked) {
+          // Add to selection if not already present
+          if (!window[config.selectedArray].includes(value)) {
+            window[config.selectedArray].push(value);
+          }
+          if (!window[config.globalArray].includes(value)) {
+            window[config.globalArray].push(value);
+          }
+          $(this).closest('tr').addClass('selected-row');
+        } else {
+          // Remove from selection
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
+          $(this).closest('tr').removeClass('selected-row');
+        }
+
+        updateCounter(config);
+        updateTabBadges();
+      });
+
+      // Select All button
+      $('.btn-select-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        table.rows({
           search: 'applied',
           page: 'current'
         }).nodes().to$().find('input[type=checkbox]').each(function() {
-          currentPageVals.push($(this).val());
+          var value = $(this).val();
+          $(this).prop('checked', true);
+          $(this).closest('tr').addClass('selected-row');
+
+          if (!window[config.selectedArray].includes(value)) {
+            window[config.selectedArray].push(value);
+          }
+          if (!window[config.globalArray].includes(value)) {
+            window[config.globalArray].push(value);
+          }
         });
-        // Hapus dari array semua value yang ada di halaman aktif
-        arr = arr.filter(function(val) {
-          return !currentPageVals.includes(val);
-        });
-        // Tambahkan semua value di halaman aktif ke array
-        currentPageVals.forEach(function(val) {
-          arr.push(val);
-        });
-        // Set checked
-        dt.rows({
-          search: 'applied',
-          page: 'current'
-        }).nodes().to$().find('input[type=checkbox]').prop('checked', true);
-        setArr(arr);
-        updateCount();
+
+        updateCounter(config);
+        updateTabBadges();
       });
-      // Uncheck Semua tombol (hanya data yang tampil di halaman aktif, hapus dari array)
-      $('.btn-unselect-all[data-table="table-' + obj.type + '"]').on('click', function() {
-        var arr = getArr();
-        var currentPageVals = [];
-        dt.rows({
+
+      // Unselect All button  
+      $('.btn-unselect-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        table.rows({
           search: 'applied',
           page: 'current'
         }).nodes().to$().find('input[type=checkbox]').each(function() {
-          currentPageVals.push($(this).val());
-          this.checked = false;
+          var value = $(this).val();
+          $(this).prop('checked', false);
+          $(this).closest('tr').removeClass('selected-row');
+
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
         });
-        // Hapus dari array semua value yang ada di halaman aktif
-        arr = arr.filter(function(val) {
-          return !currentPageVals.includes(val);
-        });
-        setArr(arr);
-        updateCount();
+
+        updateCounter(config);
+        updateTabBadges();
       });
-      // Saat draw ulang, set status checked sesuai array
-      dt.on('draw', function() {
-        var arr = getArr();
-        dt.rows().nodes().to$().find('input[type=checkbox]').each(function() {
-          this.checked = arr.includes($(this).val());
-        });
-        updateCount();
-      });
-      // Inisialisasi awal
-      var arr = getArr();
-      dt.rows().nodes().to$().find('input[type=checkbox]').each(function() {
-        this.checked = arr.includes($(this).val());
-      });
-      updateCount();
+
+      // Initialize counter
+      updateCounter(config);
     });
 
-    // Submit: hanya kirim value dari array manual
+    // Function to sync checkbox states
+    function syncCheckboxes(config) {
+      $(config.tableId + ' tbody tr').each(function() {
+        var checkbox = $(this).find('input[type=checkbox]');
+        var value = checkbox.val();
+        var shouldBeChecked = window[config.selectedArray].includes(value);
+
+        checkbox.prop('checked', shouldBeChecked);
+        if (shouldBeChecked) {
+          $(this).addClass('selected-row');
+        } else {
+          $(this).removeClass('selected-row');
+        }
+      });
+    }
+
+    // Function to update counter
+    function updateCounter(config) {
+      $(config.counterId).text(window[config.selectedArray].length + ' terpilih');
+    }
+
+    // Function to update tab badges
+    function updateTabBadges() {
+      // Blok Sensus tab
+      if (window.selected_bs.length > 0) {
+        let badge = $('#blok-sensus-tab .badge');
+        if (badge.length === 0) {
+          $('#blok-sensus-tab').append(`<span class="badge badge-pill badge-info ml-1">(${window.selected_bs.length} terpilih)</span>`);
+        } else {
+          badge.text(`(${window.selected_bs.length} terpilih)`);
+        }
+      } else {
+        $('#blok-sensus-tab .badge').remove();
+      }
+
+      // SLS tab
+      if (window.selected_sls.length > 0) {
+        let badge = $('#sls-tab .badge');
+        if (badge.length === 0) {
+          $('#sls-tab').append(`<span class="badge badge-pill badge-info ml-1">(${window.selected_sls.length} terpilih)</span>`);
+        } else {
+          badge.text(`(${window.selected_sls.length} terpilih)`);
+        }
+      } else {
+        $('#sls-tab .badge').remove();
+      }
+
+      // Desa tab
+      if (window.selected_desa.length > 0) {
+        let badge = $('#desa-tab .badge');
+        if (badge.length === 0) {
+          $('#desa-tab').append(`<span class="badge badge-pill badge-info ml-1">(${window.selected_desa.length} terpilih)</span>`);
+        } else {
+          badge.text(`(${window.selected_desa.length} terpilih)`);
+        }
+      } else {
+        $('#desa-tab .badge').remove();
+      }
+    }
+
+    // Form submission - add hidden inputs
     $('form').on('submit', function(e) {
       try {
-        // Hapus input hidden lama
+        // Remove existing hidden inputs
         $('input[name="blok_sensus[]"][type=hidden]').remove();
         $('input[name="sls[]"][type=hidden]').remove();
         $('input[name="desa[]"][type=hidden]').remove();
-        // Tambahkan input hidden sesuai array
-        selectedBlokSensus.forEach(function(val) {
+
+        // Add hidden inputs for selected items
+        window.selected_bs.forEach(function(val) {
           $('<input>').attr({
             type: 'hidden',
             name: 'blok_sensus[]',
             value: val
           }).appendTo('form');
         });
-        selectedSls.forEach(function(val) {
+
+        window.selected_sls.forEach(function(val) {
           $('<input>').attr({
             type: 'hidden',
             name: 'sls[]',
             value: val
           }).appendTo('form');
         });
-        selectedDesa.forEach(function(val) {
+
+        window.selected_desa.forEach(function(val) {
           $('<input>').attr({
             type: 'hidden',
             name: 'desa[]',
@@ -384,62 +495,134 @@
           }).appendTo('form');
         });
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error preparing form submission:', error);
         e.preventDefault();
       }
     });
-  });
-</script>
-<script>
-  $(function() {
-    $('#file_import_wilkerstat').on('change', function(e) {
-      var file = this.files[0];
-      if (!file) return;
-      var formData = new FormData();
-      formData.append('file_import_wilkerstat', file);
-      $('#import-wilkerstat-error').hide().text('');
-      $.ajax({
-        url: baseUrl + 'import-wilkerstat',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(res) {
-          if (res.status === 'error') {
-            var msg = res.message || (res.errors ? res.errors.join('<br>') : 'Import gagal');
-            $('#import-wilkerstat-error').html(msg).show();
-            return;
-          }
-          // Update array pilihan dan checkbox DataTables
-          var data = res.data;
-          // Blok Sensus
-          if (typeof selectedBlokSensus !== 'undefined') selectedBlokSensus = data.blok_sensus || [];
-          $('#table-blok-sensus input[type=checkbox]').each(function() {
-            this.checked = selectedBlokSensus.includes($(this).val());
-          });
-          // SLS
-          if (typeof selectedSls !== 'undefined') selectedSls = data.sls || [];
-          $('#table-sls input[type=checkbox]').each(function() {
-            this.checked = selectedSls.includes($(this).val());
-          });
-          // Desa
-          if (typeof selectedDesa !== 'undefined') selectedDesa = data.desa || [];
-          $('#table-desa input[type=checkbox]').each(function() {
-            this.checked = selectedDesa.includes($(this).val());
-          });
-          // Update badge
-          $('#count-blok-sensus').text(selectedBlokSensus.length + ' terpilih');
-          $('#count-sls').text(selectedSls.length + ' terpilih');
-          $('#count-desa').text(selectedDesa.length + ' terpilih');
-          Swal.fire('Berhasil', 'Import wilkerstat berhasil, pilihan sudah diperbarui.', 'success');
-        },
-        error: function(xhr) {
-          $('#import-wilkerstat-error').text('Terjadi error saat upload.').show();
-        }
+
+    // Global function for manual sync (used by import functions)
+    window.forceSyncCheckboxes = function() {
+      tableConfigs.forEach(function(config) {
+        syncCheckboxes(config);
+        updateCounter(config);
+
+        // Force DataTable to refresh its sorting data after sync
+        const table = $(config.tableId).DataTable();
+        table.columns.adjust().draw(false);
       });
-      // Reset input agar bisa upload file yang sama lagi
-      $(this).val('');
-    });
+      updateTabBadges();
+    };
+
+    // Enhanced function to refresh sorting after import
+    window.refreshTableSorting = function() {
+      try {
+        tableConfigs.forEach(function(config) {
+          if ($.fn.DataTable.isDataTable(config.tableId)) {
+            const table = $(config.tableId).DataTable();
+            // Invalidate the sorting cache and redraw
+            table.rows().invalidate('data').draw(false);
+
+            // Force page length to be respected
+            if (table.page.len() !== 10) {
+              console.log('Fixing page length for', config.tableId, 'from', table.page.len(), 'to 10');
+              table.page.len(10).draw();
+            }
+          }
+        });
+      } catch (e) {
+        console.warn('Error in refreshTableSorting:', e);
+      }
+    };
+
+    // Force page length function with pagination fix
+    window.forcePageLength = function(length = 10) {
+      try {
+        tableConfigs.forEach(function(config) {
+          if ($.fn.DataTable.isDataTable(config.tableId)) {
+            const table = $(config.tableId).DataTable();
+            console.log('Setting page length for', config.tableId, 'to', length);
+
+            // Set page length and go to first page to fix numbering
+            table.page.len(length);
+            table.page(0).draw(false);
+
+            // Force pagination to recalculate
+            setTimeout(function() {
+              table.draw(false);
+            }, 50);
+          }
+        });
+      } catch (e) {
+        console.warn('Error in forcePageLength:', e);
+      }
+    };
+
+    // Initialize tab badges
+    updateTabBadges();
+
+    // Force pagination after a short delay to ensure all elements are ready
+    setTimeout(function() {
+      try {
+        console.log('Force applying page length after delay...');
+        if (window.forcePageLength && typeof window.forcePageLength === 'function') {
+          window.forcePageLength(10);
+        }
+      } catch (e) {
+        console.warn('Error in delayed forcePageLength:', e);
+      }
+    }, 1000);
   });
 </script>
+
+<!-- CSS for selected rows -->
+<style>
+  .selected-row {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+  }
+
+  .selected-row:hover {
+    background-color: rgba(0, 123, 255, 0.15) !important;
+  }
+
+  /* Style for sortable checkbox column */
+  table.dataTable thead .sorting,
+  table.dataTable thead .sorting_asc,
+  table.dataTable thead .sorting_desc {
+    cursor: pointer;
+  }
+
+  /* Add sorting icons for checkbox column */
+  table.dataTable thead th:first-child {
+    position: relative;
+  }
+
+  table.dataTable thead th:first-child:after {
+    content: "\f0dc";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+  }
+
+  table.dataTable thead th:first-child.sorting_asc:after {
+    content: "\f0de";
+    opacity: 1;
+  }
+
+  table.dataTable thead th:first-child.sorting_desc:after {
+    content: "\f0dd";
+    opacity: 1;
+  }
+</style>
+
+<!-- BS Custom File Input -->
+<script src="<?= base_url('plugins/bs-custom-file-input/bs-custom-file-input.min.js') ?>"></script>
+
+<!-- Client-side Excel Import -->
+<script src="<?= base_url('js/client-side-excel-import.js') ?>"></script>
+
+<?php include(__DIR__ . '/../import_wilkerstat/modal.php'); ?>
 <?= $this->endSection() ?>

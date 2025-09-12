@@ -94,6 +94,8 @@
       <div class="tab-pane fade show active" id="blok-sensus" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-blok-sensus">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-blok-sensus">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-blok-sensus">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-blok-sensus">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-blok-sensus">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-blok-sensus">
@@ -122,6 +124,8 @@
       <div class="tab-pane fade" id="sls" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-sls">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-sls">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-sls">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-sls">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-sls">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-sls">
@@ -150,6 +154,8 @@
       <div class="tab-pane fade" id="desa" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-desa">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-desa">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-desa">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-desa">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-desa">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-desa">
@@ -228,10 +234,16 @@
   var appBaseUrl = '<?= base_url() ?>';
   var baseUrl = '<?= base_url() ?>';
 
-  // Initialize selection arrays from PHP data
-  window.selectedBlokSensus = <?php echo json_encode($selectedBlokSensus ?? []); ?>;
-  window.selectedSls = <?php echo json_encode($selectedSls ?? []); ?>;
-  window.selectedDesa = <?php echo json_encode($selectedDesa ?? []); ?>;
+  // Initialize selection arrays from PHP data with unique prefixes to avoid conflicts
+  window.selectedBlokSensus = <?php echo json_encode(array_map(function ($id) {
+                                return 'bs_' . $id;
+                              }, $selectedBlokSensus ?? [])); ?>;
+  window.selectedSls = <?php echo json_encode(array_map(function ($id) {
+                          return 'sls_' . $id;
+                        }, $selectedSls ?? [])); ?>;
+  window.selectedDesa = <?php echo json_encode(array_map(function ($id) {
+                          return 'desa_' . $id;
+                        }, $selectedDesa ?? [])); ?>;
   window.selected_bs = [...window.selectedBlokSensus];
   window.selected_sls = [...window.selectedSls];
   window.selected_desa = [...window.selectedDesa];
@@ -259,21 +271,21 @@
         type: 'bs',
         counterId: '#count-blok-sensus',
         selectedArray: 'selected_bs',
-        globalArray: 'selectedBlokSensus'
+        globalArray: 'selected_bs'
       },
       {
         tableId: '#table-sls',
         type: 'sls',
         counterId: '#count-sls',
         selectedArray: 'selected_sls',
-        globalArray: 'selectedSls'
+        globalArray: 'selected_sls'
       },
       {
         tableId: '#table-desa',
         type: 'desa',
         counterId: '#count-desa',
         selectedArray: 'selected_desa',
-        globalArray: 'selectedDesa'
+        globalArray: 'selected_desa'
       }
     ];
 
@@ -318,8 +330,18 @@
           console.warn('Error extracting checkbox value:', e);
         }
 
+        // Create prefixed value based on config
+        let prefixedValue = '';
+        if (selectedArray === window.selected_bs) {
+          prefixedValue = 'bs_' + checkboxValue;
+        } else if (selectedArray === window.selected_sls) {
+          prefixedValue = 'sls_' + checkboxValue;
+        } else if (selectedArray === window.selected_desa) {
+          prefixedValue = 'desa_' + checkboxValue;
+        }
+
         // Return '1' if this item is in the selected array, '0' otherwise
-        return selectedArray.includes(checkboxValue) ? '1' : '0';
+        return selectedArray.includes(prefixedValue) ? '1' : '0';
       });
     };
 
@@ -358,19 +380,29 @@
         var value = $(this).val();
         var isChecked = $(this).prop('checked');
 
+        // Add unique prefix to avoid conflicts between different wilkerstat types
+        var prefixedValue = '';
+        if (config.selectedArray === 'selected_bs') {
+          prefixedValue = 'bs_' + value;
+        } else if (config.selectedArray === 'selected_sls') {
+          prefixedValue = 'sls_' + value;
+        } else if (config.selectedArray === 'selected_desa') {
+          prefixedValue = 'desa_' + value;
+        }
+
         if (isChecked) {
           // Add to selection if not already present
-          if (!window[config.selectedArray].includes(value)) {
-            window[config.selectedArray].push(value);
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
           }
-          if (!window[config.globalArray].includes(value)) {
-            window[config.globalArray].push(value);
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
           }
           $(this).closest('tr').addClass('selected-row');
         } else {
           // Remove from selection
-          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
-          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== prefixedValue);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== prefixedValue);
           $(this).closest('tr').removeClass('selected-row');
         }
 
@@ -378,7 +410,7 @@
         updateTabBadges();
       });
 
-      // Select All button
+      // Select All button (current page only)
       $('.btn-select-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
         table.rows({
           search: 'applied',
@@ -387,12 +419,14 @@
           var value = $(this).val();
           $(this).prop('checked', true);
           $(this).closest('tr').addClass('selected-row');
-
-          if (!window[config.selectedArray].includes(value)) {
-            window[config.selectedArray].push(value);
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+            ('desa_' + value);
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
           }
-          if (!window[config.globalArray].includes(value)) {
-            window[config.globalArray].push(value);
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
           }
         });
 
@@ -400,7 +434,7 @@
         updateTabBadges();
       });
 
-      // Unselect All button  
+      // Unselect All button  (current page only)
       $('.btn-unselect-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
         table.rows({
           search: 'applied',
@@ -409,11 +443,63 @@
           var value = $(this).val();
           $(this).prop('checked', false);
           $(this).closest('tr').removeClass('selected-row');
-
-          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
-          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+            ('desa_' + value);
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== prefixedValue);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== prefixedValue);
         });
 
+        updateCounter(config);
+        updateTabBadges();
+      });
+
+      // Select All (all data in tab)
+      $('.btn-select-all-tab[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        table.rows({
+          search: 'applied'
+        }).every(function() {
+          var $cb = $(this.node()).find('input[type=checkbox]');
+          var rawValue = $cb.val();
+          if (!rawValue) return;
+
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + rawValue) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + rawValue) :
+            ('desa_' + rawValue);
+
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
+          }
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
+          }
+        });
+        syncCheckboxes(config);
+        updateCounter(config);
+        updateTabBadges();
+      });
+
+      // Unselect All (all data in tab)
+      $('.btn-unselect-all-tab[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        table.rows({
+          search: 'applied'
+        }).every(function() {
+          var $cb = $(this.node()).find('input[type=checkbox]');
+          var rawValue = $cb.val();
+          if (!rawValue) return;
+
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + rawValue) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + rawValue) :
+            ('desa_' + rawValue);
+
+          window[config.selectedArray] = window[config.selectedArray].filter(function(v) {
+            return v !== prefixedValue;
+          });
+          window[config.globalArray] = window[config.globalArray].filter(function(v) {
+            return v !== prefixedValue;
+          });
+        });
+        syncCheckboxes(config);
         updateCounter(config);
         updateTabBadges();
       });
@@ -428,7 +514,10 @@
       $(config.tableId + ' tbody tr').each(function() {
         var checkbox = $(this).find('input[type=checkbox]');
         var value = checkbox.val();
-        var shouldBeChecked = window[config.selectedArray].includes(value);
+        var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+          (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+          ('desa_' + value);
+        var shouldBeChecked = window[config.selectedArray].includes(prefixedValue);
 
         checkbox.prop('checked', shouldBeChecked);
         if (shouldBeChecked) {
@@ -446,8 +535,17 @@
 
     // Function to update tab badges
     function updateTabBadges() {
+      console.log('Array Status:', {
+        selected_bs: window.selected_bs ? window.selected_bs.length : 'undefined',
+        selected_sls: window.selected_sls ? window.selected_sls.length : 'undefined',
+        selected_desa: window.selected_desa ? window.selected_desa.length : 'undefined',
+        selected_bs_sample: window.selected_bs ? window.selected_bs.slice(0, 3) : 'undefined',
+        selected_sls_sample: window.selected_sls ? window.selected_sls.slice(0, 3) : 'undefined',
+        selected_desa_sample: window.selected_desa ? window.selected_desa.slice(0, 3) : 'undefined'
+      });
+
       // Blok Sensus tab
-      if (window.selected_bs.length > 0) {
+      if (window.selected_bs && window.selected_bs.length > 0) {
         let badge = $('#blok-sensus-tab .badge');
         if (badge.length === 0) {
           $('#blok-sensus-tab').append(`<span class="badge badge-pill badge-info ml-1">(${window.selected_bs.length} terpilih)</span>`);
@@ -486,35 +584,56 @@
     // Form submission - add hidden inputs
     $('form').on('submit', function(e) {
       try {
+        console.log('FORM SUBMIT: Preparing data...', {
+          selected_bs_count: window.selected_bs ? window.selected_bs.length : 0,
+          selected_sls_count: window.selected_sls ? window.selected_sls.length : 0,
+          selected_desa_count: window.selected_desa ? window.selected_desa.length : 0,
+          selected_bs_sample: window.selected_bs ? window.selected_bs.slice(0, 5) : [],
+          selected_sls_sample: window.selected_sls ? window.selected_sls.slice(0, 5) : [],
+          selected_desa_sample: window.selected_desa ? window.selected_desa.slice(0, 5) : []
+        });
+
         // Remove existing hidden inputs
         $('input[name="blok_sensus[]"][type=hidden]').remove();
         $('input[name="sls[]"][type=hidden]').remove();
         $('input[name="desa[]"][type=hidden]').remove();
 
-        // Add hidden inputs for selected items
-        window.selected_bs.forEach(function(val) {
-          $('<input>').attr({
-            type: 'hidden',
-            name: 'blok_sensus[]',
-            value: val
-          }).appendTo('form');
-        });
+        // Add hidden inputs for selected items (remove prefix before submitting)
+        if (window.selected_bs) {
+          window.selected_bs.forEach(function(val) {
+            // Remove 'bs_' prefix for database storage
+            const actualValue = val.startsWith('bs_') ? val.substring(3) : val;
+            $('<input>').attr({
+              type: 'hidden',
+              name: 'blok_sensus[]',
+              value: actualValue
+            }).appendTo('form');
+          });
+        }
 
-        window.selected_sls.forEach(function(val) {
-          $('<input>').attr({
-            type: 'hidden',
-            name: 'sls[]',
-            value: val
-          }).appendTo('form');
-        });
+        if (window.selected_sls) {
+          window.selected_sls.forEach(function(val) {
+            // Remove 'sls_' prefix for database storage
+            const actualValue = val.startsWith('sls_') ? val.substring(4) : val;
+            $('<input>').attr({
+              type: 'hidden',
+              name: 'sls[]',
+              value: actualValue
+            }).appendTo('form');
+          });
+        }
 
-        window.selected_desa.forEach(function(val) {
-          $('<input>').attr({
-            type: 'hidden',
-            name: 'desa[]',
-            value: val
-          }).appendTo('form');
-        });
+        if (window.selected_desa) {
+          window.selected_desa.forEach(function(val) {
+            // Remove 'desa_' prefix for database storage
+            const actualValue = val.startsWith('desa_') ? val.substring(5) : val;
+            $('<input>').attr({
+              type: 'hidden',
+              name: 'desa[]',
+              value: actualValue
+            }).appendTo('form');
+          });
+        }
       } catch (error) {
         console.error('Error preparing form submission:', error);
         e.preventDefault();

@@ -78,6 +78,8 @@
       <div class="tab-pane fade show active" id="blok-sensus" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-blok-sensus">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-blok-sensus">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-blok-sensus">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-blok-sensus">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-blok-sensus">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-blok-sensus">
@@ -106,6 +108,8 @@
       <div class="tab-pane fade" id="sls" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-sls">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-sls">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-sls">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-sls">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-sls">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-sls">
@@ -134,6 +138,8 @@
       <div class="tab-pane fade" id="desa" role="tabpanel">
         <button type="button" class="btn btn-sm btn-primary mb-2 btn-select-all" data-table="table-desa">Pilih Semua</button>
         <button type="button" class="btn btn-sm btn-secondary mb-2 btn-unselect-all" data-table="table-desa">Uncheck Semua</button>
+        <button type="button" class="btn btn-sm btn-success mb-2 ml-1 btn-select-all-tab" data-table="table-desa">Pilih Semua (semua data)</button>
+        <button type="button" class="btn btn-sm btn-danger mb-2 ml-1 btn-unselect-all-tab" data-table="table-desa">Uncheck Semua (semua data)</button>
         <small class="text-muted d-block mb-2">Aksi hanya berlaku pada data yang sedang tampil (hasil filter/pencarian aktif).</small>
         <span class="badge badge-info ml-2 count-selected" id="count-desa">0 terpilih</span>
         <table class="table table-bordered table-sm" id="table-desa">
@@ -208,7 +214,7 @@
   var appBaseUrl = '<?= base_url() ?>';
   var baseUrl = '<?= base_url() ?>';
 
-  // Initialize selection arrays
+  // Initialize selection arrays with unique prefixes to avoid conflicts
   window.selectedBlokSensus = [];
   window.selectedSls = [];
   window.selectedDesa = [];
@@ -239,21 +245,21 @@
         type: 'bs',
         counterId: '#count-blok-sensus',
         selectedArray: 'selected_bs',
-        globalArray: 'selectedBlokSensus'
+        globalArray: 'selected_bs'
       },
       {
         tableId: '#table-sls',
         type: 'sls',
         counterId: '#count-sls',
         selectedArray: 'selected_sls',
-        globalArray: 'selectedSls'
+        globalArray: 'selected_sls'
       },
       {
         tableId: '#table-desa',
         type: 'desa',
         counterId: '#count-desa',
         selectedArray: 'selected_desa',
-        globalArray: 'selectedDesa'
+        globalArray: 'selected_desa'
       }
     ];
 
@@ -298,8 +304,18 @@
           console.warn('Error extracting checkbox value:', e);
         }
 
+        // Create prefixed value based on config
+        let prefixedValue = '';
+        if (selectedArray === window.selected_bs) {
+          prefixedValue = 'bs_' + checkboxValue;
+        } else if (selectedArray === window.selected_sls) {
+          prefixedValue = 'sls_' + checkboxValue;
+        } else if (selectedArray === window.selected_desa) {
+          prefixedValue = 'desa_' + checkboxValue;
+        }
+
         // Return '1' if this item is in the selected array, '0' otherwise
-        return selectedArray.includes(checkboxValue) ? '1' : '0';
+        return selectedArray.includes(prefixedValue) ? '1' : '0';
       });
     };
 
@@ -338,27 +354,51 @@
         var value = $(this).val();
         var isChecked = $(this).prop('checked');
 
+        // Add unique prefix to avoid conflicts between different wilkerstat types
+        var prefixedValue = '';
+        if (config.selectedArray === 'selected_bs') {
+          prefixedValue = 'bs_' + value;
+        } else if (config.selectedArray === 'selected_sls') {
+          prefixedValue = 'sls_' + value;
+        } else if (config.selectedArray === 'selected_desa') {
+          prefixedValue = 'desa_' + value;
+        }
+
+        console.log('Checkbox changed:', {
+          table: config.tableId,
+          value: value,
+          prefixedValue: prefixedValue,
+          isChecked: isChecked,
+          selectedArrayBefore: window[config.selectedArray].length,
+          globalArrayBefore: window[config.globalArray].length
+        });
+
         if (isChecked) {
           // Add to selection if not already present
-          if (!window[config.selectedArray].includes(value)) {
-            window[config.selectedArray].push(value);
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
           }
-          if (!window[config.globalArray].includes(value)) {
-            window[config.globalArray].push(value);
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
           }
           $(this).closest('tr').addClass('selected-row');
         } else {
           // Remove from selection
-          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
-          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== prefixedValue);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== prefixedValue);
           $(this).closest('tr').removeClass('selected-row');
         }
+
+        console.log('After change:', {
+          selectedArrayAfter: window[config.selectedArray].length,
+          globalArrayAfter: window[config.globalArray].length
+        });
 
         updateCounter(config);
         updateTabBadges();
       });
 
-      // Select All button
+      // Select All button (current page only)
       $('.btn-select-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
         table.rows({
           search: 'applied',
@@ -367,12 +407,14 @@
           var value = $(this).val();
           $(this).prop('checked', true);
           $(this).closest('tr').addClass('selected-row');
-
-          if (!window[config.selectedArray].includes(value)) {
-            window[config.selectedArray].push(value);
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+            ('desa_' + value);
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
           }
-          if (!window[config.globalArray].includes(value)) {
-            window[config.globalArray].push(value);
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
           }
         });
 
@@ -380,7 +422,7 @@
         updateTabBadges();
       });
 
-      // Unselect All button  
+      // Unselect All button  (current page only)
       $('.btn-unselect-all[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
         table.rows({
           search: 'applied',
@@ -389,11 +431,67 @@
           var value = $(this).val();
           $(this).prop('checked', false);
           $(this).closest('tr').removeClass('selected-row');
-
-          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== value);
-          window[config.globalArray] = window[config.globalArray].filter(v => v !== value);
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+            ('desa_' + value);
+          window[config.selectedArray] = window[config.selectedArray].filter(v => v !== prefixedValue);
+          window[config.globalArray] = window[config.globalArray].filter(v => v !== prefixedValue);
         });
 
+        updateCounter(config);
+        updateTabBadges();
+      });
+
+      // Select All (all data in tab)
+      $('.btn-select-all-tab[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        // iterate over ALL rows that match current search (all pages) and use the row DOM
+        table.rows({
+          search: 'applied'
+        }).every(function() {
+          var $cb = $(this.node()).find('input[type=checkbox]');
+          var rawValue = $cb.val();
+          if (!rawValue) return;
+
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + rawValue) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + rawValue) :
+            ('desa_' + rawValue);
+
+          if (!window[config.selectedArray].includes(prefixedValue)) {
+            window[config.selectedArray].push(prefixedValue);
+          }
+          if (!window[config.globalArray].includes(prefixedValue)) {
+            window[config.globalArray].push(prefixedValue);
+          }
+        });
+
+        // sync UI on current page
+        syncCheckboxes(config);
+        updateCounter(config);
+        updateTabBadges();
+      });
+
+      // Unselect All (all data in tab)
+      $('.btn-unselect-all-tab[data-table="' + config.tableId.substring(1) + '"]').on('click', function() {
+        table.rows({
+          search: 'applied'
+        }).every(function() {
+          var $cb = $(this.node()).find('input[type=checkbox]');
+          var rawValue = $cb.val();
+          if (!rawValue) return;
+
+          var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + rawValue) :
+            (config.selectedArray === 'selected_sls') ? ('sls_' + rawValue) :
+            ('desa_' + rawValue);
+
+          window[config.selectedArray] = window[config.selectedArray].filter(function(v) {
+            return v !== prefixedValue;
+          });
+          window[config.globalArray] = window[config.globalArray].filter(function(v) {
+            return v !== prefixedValue;
+          });
+        });
+
+        syncCheckboxes(config);
         updateCounter(config);
         updateTabBadges();
       });
@@ -407,7 +505,10 @@
       $(config.tableId + ' tbody tr').each(function() {
         var checkbox = $(this).find('input[type=checkbox]');
         var value = checkbox.val();
-        var shouldBeChecked = window[config.selectedArray].includes(value);
+        var prefixedValue = (config.selectedArray === 'selected_bs') ? ('bs_' + value) :
+          (config.selectedArray === 'selected_sls') ? ('sls_' + value) :
+          ('desa_' + value);
+        var shouldBeChecked = window[config.selectedArray].includes(prefixedValue);
 
         checkbox.prop('checked', shouldBeChecked);
         if (shouldBeChecked) {
@@ -420,11 +521,19 @@
 
     // Function to update counter
     function updateCounter(config) {
-      $(config.counterId).text(window[config.selectedArray].length + ' terpilih');
+      var count = window[config.selectedArray].length;
+      console.log('Updating counter for', config.tableId, 'count:', count);
+      $(config.counterId).text(count + ' terpilih');
     }
 
     // Function to update tab badges
     function updateTabBadges() {
+      console.log('Updating tab badges:', {
+        selected_bs: window.selected_bs.length,
+        selected_sls: window.selected_sls.length,
+        selected_desa: window.selected_desa.length
+      });
+
       // Blok Sensus tab
       if (window.selected_bs.length > 0) {
         let badge = $('#blok-sensus-tab .badge');
@@ -470,108 +579,124 @@
         $('input[name="sls[]"][type=hidden]').remove();
         $('input[name="desa[]"][type=hidden]').remove();
 
-        // Add hidden inputs for selected items
+        // Add hidden inputs for selected items (remove prefix before submitting)
         window.selected_bs.forEach(function(val) {
+          // Remove 'bs_' prefix for database storage
+          const actualValue = val.startsWith('bs_') ? val.substring(3) : val;
           $('<input>').attr({
             type: 'hidden',
             name: 'blok_sensus[]',
-            value: val
+            value: actualValue
           }).appendTo('form');
         });
 
         window.selected_sls.forEach(function(val) {
+          // Remove 'sls_' prefix for database storage
+          const actualValue = val.startsWith('sls_') ? val.substring(4) : val;
           $('<input>').attr({
             type: 'hidden',
             name: 'sls[]',
-            value: val
+            value: actualValue
           }).appendTo('form');
         });
 
         window.selected_desa.forEach(function(val) {
+          // Remove 'desa_' prefix for database storage
+          const actualValue = val.startsWith('desa_') ? val.substring(5) : val;
           $('<input>').attr({
             type: 'hidden',
             name: 'desa[]',
-            value: val
+            value: actualValue
           }).appendTo('form');
         });
-      } catch (error) {
-        console.error('Error preparing form submission:', error);
-        e.preventDefault();
+      } catch (e) {
+        console.warn('Error during form submission:', e);
       }
     });
-
-    // Global function for manual sync (used by import functions)
-    window.forceSyncCheckboxes = function() {
-      tableConfigs.forEach(function(config) {
-        syncCheckboxes(config);
-        updateCounter(config);
-
-        // Force DataTable to refresh its sorting data after sync
-        const table = $(config.tableId).DataTable();
-        table.columns.adjust().draw(false);
-      });
-      updateTabBadges();
-    };
-
-    // Enhanced function to refresh sorting after import
-    window.refreshTableSorting = function() {
-      try {
-        tableConfigs.forEach(function(config) {
-          if ($.fn.DataTable.isDataTable(config.tableId)) {
-            const table = $(config.tableId).DataTable();
-            // Invalidate the sorting cache and redraw
-            table.rows().invalidate('data').draw(false);
-
-            // Force page length to be respected
-            if (table.page.len() !== 10) {
-              console.log('Fixing page length for', config.tableId, 'from', table.page.len(), 'to 10');
-              table.page.len(10).draw();
-            }
-          }
-        });
-      } catch (e) {
-        console.warn('Error in refreshTableSorting:', e);
-      }
-    };
-
-    // Force page length function with pagination fix
-    window.forcePageLength = function(length = 10) {
-      try {
-        tableConfigs.forEach(function(config) {
-          if ($.fn.DataTable.isDataTable(config.tableId)) {
-            const table = $(config.tableId).DataTable();
-            console.log('Setting page length for', config.tableId, 'to', length);
-
-            // Set page length and go to first page to fix numbering
-            table.page.len(length);
-            table.page(0).draw(false);
-
-            // Force pagination to recalculate
-            setTimeout(function() {
-              table.draw(false);
-            }, 50);
-          }
-        });
-      } catch (e) {
-        console.warn('Error in forcePageLength:', e);
-      }
-    };
-
-    // Initialize tab badges
-    updateTabBadges();
-
-    // Force pagination after a short delay to ensure all elements are ready
-    setTimeout(function() {
-      try {
-        console.log('Force applying page length after delay...');
-        if (window.forcePageLength && typeof window.forcePageLength === 'function') {
-          window.forcePageLength(10);
-        }
-      } catch (e) {
-        console.warn('Error in delayed forcePageLength:', e);
-      }
-    }, 1000);
   });
+
+  // Global function for manual sync (used by import functions)
+  window.forceSyncCheckboxes = function() {
+    tableConfigs.forEach(function(config) {
+      syncCheckboxes(config);
+      updateCounter(config);
+
+      // Force DataTable to refresh its sorting data after sync
+      const table = $(config.tableId).DataTable();
+      table.columns.adjust().draw(false);
+    });
+    updateTabBadges();
+  };
+
+  // Enhanced function to refresh sorting after import
+  window.refreshTableSorting = function() {
+    try {
+      tableConfigs.forEach(function(config) {
+        if ($.fn.DataTable.isDataTable(config.tableId)) {
+          const table = $(config.tableId).DataTable();
+          // Invalidate the sorting cache and redraw
+          table.rows().invalidate('data').draw(false);
+
+          // Force page length to be respected
+          if (table.page.len() !== 10) {
+            console.log('Fixing page length for', config.tableId, 'from', table.page.len(), 'to 10');
+            table.page.len(10).draw();
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('Error in refreshTableSorting:', e);
+    }
+  };
+
+  // Force page length function with pagination fix
+  window.forcePageLength = function(length = 10) {
+    try {
+      tableConfigs.forEach(function(config) {
+        if ($.fn.DataTable.isDataTable(config.tableId)) {
+          const table = $(config.tableId).DataTable();
+          console.log('Setting page length for', config.tableId, 'to', length);
+
+          // Set page length and go to first page to fix numbering
+          table.page.len(length);
+          table.page(0).draw(false);
+
+          // Force pagination to recalculate
+          setTimeout(function() {
+            table.draw(false);
+          }, 50);
+        }
+      });
+    } catch (e) {
+      console.warn('Error in forcePageLength:', e);
+    }
+  };
+
+  // Initialize tab badges
+  updateTabBadges();
+
+  // Global checkbox event handler for debugging
+  $(document).on('change', 'input[type=checkbox]', function() {
+    console.log('GLOBAL: Checkbox changed', {
+      value: $(this).val(),
+      checked: $(this).prop('checked'),
+      class: $(this).attr('class'),
+      name: $(this).attr('name'),
+      table: $(this).closest('table').attr('id')
+    });
+  });
+
+  // Force pagination after a short delay to ensure all elements are ready
+  setTimeout(function() {
+    try {
+      console.log('Force applying page length after delay...');
+      if (window.forcePageLength && typeof window.forcePageLength === 'function') {
+        window.forcePageLength(10);
+      }
+    } catch (e) {
+      console.warn('Error in delayed forcePageLength:', e);
+    }
+  }, 1000);
 </script>
 
 <!-- CSS for selected rows -->

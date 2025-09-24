@@ -338,6 +338,7 @@
         pageLength: 10,
         lengthMenu: [10, 25, 50, 100],
         lengthChange: true,
+        autoWidth: false,
         columnDefs: [{
           targets: 0,
           orderable: true,

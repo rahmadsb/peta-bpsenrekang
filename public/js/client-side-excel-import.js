@@ -646,22 +646,27 @@ $(document).ready(function () {
       updateSelections('desa', data.desa);
     }
 
-    // Force sync if available
+    // Force syncs and redraws multiple times to avoid race conditions
     if (window.forceSyncCheckboxes && typeof window.forceSyncCheckboxes === 'function') {
-      setTimeout(window.forceSyncCheckboxes, 500);
+      [100, 300, 600, 1200, 2000].forEach(delay => setTimeout(window.forceSyncCheckboxes, delay));
     }
 
-    // Also refresh table sorting to ensure correct sorting after import
     if (window.refreshTableSorting && typeof window.refreshTableSorting === 'function') {
-      setTimeout(window.refreshTableSorting, 700);
+      [200, 600, 1200].forEach(delay => setTimeout(function () {
+        window.refreshTableSorting();
+        // After sorting refresh, fix column widths
+        try {
+          ['#table-blok-sensus', '#table-sls', '#table-desa'].forEach(function (id) {
+            if ($.fn.DataTable.isDataTable(id)) {
+              $(id).DataTable().columns.adjust().draw(false);
+            }
+          });
+        } catch (e) { }
+      }, delay));
     }
 
-    // Force page length to ensure pagination is working correctly
     if (window.forcePageLength && typeof window.forcePageLength === 'function') {
-      setTimeout(function () {
-        window.forcePageLength(10);
-        console.log('Forced page length to 10 after import');
-      }, 800);
+      setTimeout(function () { window.forcePageLength(10); }, 500);
     }
   }
 
@@ -691,13 +696,34 @@ $(document).ready(function () {
     // Convert IDs to strings for consistency
     const stringIds = ids.map(id => id.toString());
 
-    // Add new IDs to both arrays
+    // Helper to check if current system expects prefixed IDs (compat with inline scripts)
+    function isPrefixedFormat(arr, type) {
+      if (!Array.isArray(arr) || arr.length === 0) return false;
+      const prefix = type === 'bs' ? 'bs_' : type === 'sls' ? 'sls_' : 'desa_';
+      // If majority of first few entries are prefixed, consider prefixed mode
+      const sample = arr.slice(0, Math.min(arr.length, 5));
+      return sample.every(v => typeof v === 'string' && v.indexOf(prefix) === 0);
+    }
+
+    function toStorageValue(id, type, usePrefix) {
+      if (!usePrefix) return id;
+      const prefix = type === 'bs' ? 'bs_' : type === 'sls' ? 'sls_' : 'desa_';
+      // Avoid double prefix
+      return id.indexOf(prefix) === 0 ? id : (prefix + id);
+    }
+
+    // Decide format: inline Kegiatan views expect prefixed values in selected_* arrays
+    // Force prefixed mode for consistency across create/edit and to ensure UI sync
+    const usePrefix = true;
+
+    // Add new IDs to both arrays in the decided format
     stringIds.forEach(id => {
-      if (!selectedArray.includes(id)) {
-        selectedArray.push(id);
+      const val = toStorageValue(id, type, usePrefix);
+      if (!selectedArray.includes(val)) {
+        selectedArray.push(val);
       }
-      if (!globalArray.includes(id)) {
-        globalArray.push(id);
+      if (!globalArray.includes(val)) {
+        globalArray.push(val);
       }
     });
 
@@ -721,12 +747,18 @@ $(document).ready(function () {
       $(counterId).text(selectedArray.length + ' terpilih');
     }
 
-    // Update checkboxes in the table
+    // Update checkboxes in the table (supports prefixed and plain storage)
     $(tableId + ' tbody tr').each(function () {
       const checkbox = $(this).find('input[type="checkbox"]');
       const val = checkbox.val();
+      if (!val) return;
 
-      if (val && selectedArray.includes(val.toString())) {
+      const valStr = val.toString();
+      const prefixedVal = toStorageValue(valStr, type, true);
+      const plainVal = valStr;
+      const shouldBeChecked = selectedArray.includes(prefixedVal) || selectedArray.includes(plainVal);
+
+      if (shouldBeChecked) {
         checkbox.prop('checked', true);
         $(this).addClass('selected-row');
       }

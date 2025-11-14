@@ -116,7 +116,7 @@ class KelolaPetaWilkerstatController extends BaseController
       }
     }
 
-    $allowed = ['image/jpeg', 'image/png'];
+    $allowed = ['image/jpeg', 'image/jpg', 'image/png'];
     $success = 0;
     $fail = 0;
     foreach ($files as $file) {
@@ -194,7 +194,7 @@ class KelolaPetaWilkerstatController extends BaseController
     $file = $petaModel->find($id);
     if (!$file) return redirect()->back()->with('error', 'File tidak ditemukan.');
     $newFile = $this->request->getFile('replace_file');
-    $allowed = ['image/jpeg', 'image/png'];
+    $allowed = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!$newFile->isValid() || !in_array($newFile->getMimeType(), $allowed)) {
       return redirect()->back()->with('error', 'File tidak valid. Hanya JPG/PNG yang diizinkan.');
     }
@@ -242,6 +242,346 @@ class KelolaPetaWilkerstatController extends BaseController
       'uploader' => session('username')
     ]);
     return redirect()->back()->with('success', 'Nama file berhasil diubah.');
+  }
+
+  public function batchUpload()
+  {
+    if ($redirect = $this->checkAccess()) return $redirect;
+
+    try {
+      $kegiatan_uuid = $this->request->getPost('id_kegiatan');
+      $jenis_peta = $this->request->getPost('jenis_peta');
+      $zipFile = $this->request->getFile('zip_file');
+
+      // Validation
+      if (!$kegiatan_uuid) {
+        return redirect()->back()->with('error', 'ID Kegiatan tidak valid.');
+      }
+      if (!$jenis_peta || !in_array($jenis_peta, ['dengan_titik', 'tanpa_titik'])) {
+        return redirect()->back()->with('error', 'Jenis peta tidak valid.');
+      }
+      if (!$zipFile || !$zipFile->isValid()) {
+        return redirect()->back()->with('error', 'File ZIP tidak valid.');
+      }
+      if ($zipFile->getMimeType() !== 'application/zip' && $zipFile->getExtension() !== 'zip') {
+        return redirect()->back()->with('error', 'File harus berformat ZIP.');
+      }
+
+      // Check if ZipArchive extension is available
+      if (!extension_loaded('zip')) {
+        return redirect()->back()->with('error', 'Server tidak mendukung ZipArchive extension.');
+      }
+
+      // Get kegiatan data
+      $kegiatanModel = new KegiatanModel();
+      $kegiatan = $kegiatanModel->find($kegiatan_uuid);
+      if (!$kegiatan) {
+        return redirect()->back()->with('error', 'Kegiatan tidak ditemukan.');
+      }
+
+      // Get all wilkerstat for this kegiatan
+      $blokPivot = (new KegiatanBlokSensusModel())->where('id_kegiatan', $kegiatan_uuid)->findAll();
+      $slsPivot = (new KegiatanSlsModel())->where('id_kegiatan', $kegiatan_uuid)->findAll();
+      $desaPivot = (new KegiatanDesaModel())->where('id_kegiatan', $kegiatan_uuid)->findAll();
+
+      // Build lookup maps: kode => [id, type, nama]
+      $wilkerstatMap = [];
+      $blokModel = new BlokSensusModel();
+      $slsModel = new SlsModel();
+      $desaModel = new DesaModel();
+
+      foreach ($blokPivot as $bp) {
+        try {
+          $bs = $blokModel->find($bp['id_blok_sensus']);
+          if ($bs && isset($bs['kode_bs'])) {
+            $wilkerstatMap[$bs['kode_bs']] = [
+              'id' => $bs['id'],
+              'type' => 'blok_sensus',
+              'nama' => $bs['nama_bs'] ?? $bs['kode_bs']
+            ];
+          }
+        } catch (\Exception $e) {
+          log_message('error', 'Error loading blok sensus: ' . $e->getMessage());
+        }
+      }
+
+      foreach ($slsPivot as $sp) {
+        try {
+          $sls = $slsModel->find($sp['id_sls']);
+          if ($sls && isset($sls['kode_sls'])) {
+            $wilkerstatMap[$sls['kode_sls']] = [
+              'id' => $sls['id'],
+              'type' => 'sls',
+              'nama' => $sls['nama_sls'] ?? $sls['kode_sls']
+            ];
+          }
+        } catch (\Exception $e) {
+          log_message('error', 'Error loading SLS: ' . $e->getMessage());
+        }
+      }
+
+      foreach ($desaPivot as $dp) {
+        try {
+          $desa = $desaModel->find($dp['id_desa']);
+          if ($desa && isset($desa['kode_desa'])) {
+            $wilkerstatMap[$desa['kode_desa']] = [
+              'id' => $desa['id'],
+              'type' => 'desa',
+              'nama' => $desa['nama_desa'] ?? $desa['kode_desa']
+            ];
+          }
+        } catch (\Exception $e) {
+          log_message('error', 'Error loading desa: ' . $e->getMessage());
+        }
+      }
+
+      // Extract ZIP to temporary directory
+      $tempDir = WRITEPATH . 'uploads/temp/batch_' . uniqid() . '/';
+      if (!is_dir($tempDir)) {
+        if (!mkdir($tempDir, 0755, true)) {
+          throw new \Exception('Gagal membuat direktori temporary untuk ekstrak ZIP.');
+        }
+      }
+
+      $zip = new \ZipArchive();
+      $zipResult = $zip->open($zipFile->getTempName());
+
+      if ($zipResult !== TRUE) {
+        return redirect()->back()->with('error', 'Gagal membuka file ZIP. Error code: ' . $zipResult);
+      }
+
+      if (!$zip->extractTo($tempDir)) {
+        $zip->close();
+        $this->deleteDirectory($tempDir);
+        return redirect()->back()->with('error', 'Gagal mengekstrak file ZIP. Pastikan file ZIP tidak rusak.');
+      }
+      $zip->close();
+
+      // Process extracted files
+      $petaModel = new KegiatanWilkerstatPetaModel();
+      $stats = [
+        'success' => 0,
+        'failed' => 0,
+        'not_found' => 0,
+        'invalid' => 0,
+        'errors' => []
+      ];
+
+      $allowedExtensions = ['jpg', 'jpeg', 'png'];
+      $allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      $iterator = new \RecursiveIteratorIterator(
+        new \RecursiveDirectoryIterator($tempDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+        \RecursiveIteratorIterator::SELF_FIRST
+      );
+
+      foreach ($iterator as $file) {
+        if ($file->isFile()) {
+          $fileName = $file->getFilename();
+          $filePath = $file->getPathname();
+          $extension = strtolower($file->getExtension());
+
+          // Skip non-image files by extension
+          if (!in_array($extension, $allowedExtensions)) {
+            $stats['invalid']++;
+            continue;
+          }
+
+          // Validate mime type
+          $mimeType = mime_content_type($filePath);
+          if (!in_array($mimeType, $allowedMimeTypes)) {
+            $stats['invalid']++;
+            $stats['errors'][] = "<strong>$fileName</strong> - Format tidak valid (harus JPG/PNG)";
+            continue;
+          }
+
+          // Parse filename to extract kode and check if it's inset
+          try {
+            $fileNameWithoutExt = pathinfo($fileName, PATHINFO_FILENAME);
+            $isInset = preg_match('/^(.+)_(\d+)$/', $fileNameWithoutExt, $matches);
+
+            if ($isInset) {
+              // Inset file: [kode]_[nomor]
+              $kode = $matches[1];
+              $insetNumber = $matches[2];
+            } else {
+              // Main file: [kode]
+              $kode = $fileNameWithoutExt;
+              $insetNumber = null;
+            }
+
+            // Validate kode format (should not be empty)
+            if (empty($kode) || trim($kode) === '') {
+              $stats['invalid']++;
+              $stats['errors'][] = "<strong>$fileName</strong> - Nama file tidak valid (kode kosong)";
+              continue;
+            }
+
+            // Check if kode exists in wilkerstat map
+            if (!isset($wilkerstatMap[$kode])) {
+              $stats['not_found']++;
+              $errorMsg = "<strong>$fileName</strong> - Kode '$kode' tidak terdaftar di kegiatan ini";
+              if ($isInset) {
+                $errorMsg .= " (peta inset)";
+              }
+              $stats['errors'][] = $errorMsg;
+              continue;
+            }
+          } catch (\Exception $e) {
+            $stats['invalid']++;
+            $stats['errors'][] = "<strong>$fileName</strong> - Error parsing nama file";
+            continue;
+          }
+
+          try {
+            $wilkerstatInfo = $wilkerstatMap[$kode];
+            $wilkerstatId = $wilkerstatInfo['id'];
+            $wilkerstatType = $wilkerstatInfo['type'];
+            $wilkerstatNama = $wilkerstatInfo['nama'] ?? $kode;
+
+            // For main peta, check if already exists
+            $parentPetaId = null;
+            if (!$isInset) {
+              $existingPetaUtama = $petaModel->where([
+                'id_kegiatan' => $kegiatan_uuid,
+                'wilkerstat_type' => $wilkerstatType,
+                'id_wilkerstat' => $wilkerstatId,
+                'jenis_peta' => $jenis_peta,
+                'id_parent_peta' => null
+              ])->first();
+
+              if ($existingPetaUtama) {
+                $stats['failed']++;
+                $stats['errors'][] = "<strong>$fileName</strong> - Peta utama untuk kode '$kode' sudah ada";
+                continue;
+              }
+            } else {
+              // For inset, find parent peta utama
+              $parentPetaUtama = $petaModel->where([
+                'id_kegiatan' => $kegiatan_uuid,
+                'wilkerstat_type' => $wilkerstatType,
+                'id_wilkerstat' => $wilkerstatId,
+                'jenis_peta' => $jenis_peta,
+                'id_parent_peta' => null
+              ])->first();
+
+              if (!$parentPetaUtama) {
+                $stats['failed']++;
+                $stats['errors'][] = "<strong>$fileName</strong> - Peta inset untuk kode '$kode' tidak dapat diupload karena peta utama belum ada";
+                continue;
+              }
+              $parentPetaId = $parentPetaUtama['id'];
+            }
+
+            // Move file to uploads directory
+            $newFileName = uniqid() . '.' . $extension;
+            $destination = WRITEPATH . 'uploads/' . $newFileName;
+
+            if (!copy($filePath, $destination)) {
+              $stats['failed']++;
+              $stats['errors'][] = "<strong>$fileName</strong> - Gagal memindahkan file (permission error)";
+              continue;
+            }
+
+            // Insert to database
+            try {
+              $petaModel->insert([
+                'id' => Uuid::uuid4()->toString(),
+                'id_kegiatan' => $kegiatan_uuid,
+                'wilkerstat_type' => $wilkerstatType,
+                'id_wilkerstat' => $wilkerstatId,
+                'jenis_peta' => $jenis_peta,
+                'file_path' => $newFileName,
+                'nama_file' => $fileName,
+                'uploaded_at' => date('Y-m-d H:i:s'),
+                'uploader' => session('username'),
+                'id_parent_peta' => $parentPetaId
+              ]);
+              $stats['success']++;
+            } catch (\Exception $e) {
+              $stats['failed']++;
+              $stats['errors'][] = "<strong>$fileName</strong> - Error database: " . substr($e->getMessage(), 0, 50);
+              // Delete uploaded file if database insert fails
+              if (file_exists($destination)) {
+                unlink($destination);
+              }
+            }
+          } catch (\Exception $e) {
+            $stats['failed']++;
+            $stats['errors'][] = "<strong>$fileName</strong> - Error memproses file";
+            log_message('error', 'Error processing file in batch upload: ' . $e->getMessage());
+          }
+        }
+      }
+    } catch (\Exception $e) {
+      // Clean up temporary directory on error
+      if (isset($tempDir) && is_dir($tempDir)) {
+        $this->deleteDirectory($tempDir);
+      }
+      log_message('error', 'Batch upload error: ' . $e->getMessage());
+      return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses file ZIP: ' . $e->getMessage());
+    }
+
+    // Clean up temporary directory
+    if (isset($tempDir) && is_dir($tempDir)) {
+      $this->deleteDirectory($tempDir);
+    }
+
+    // Prepare success message
+    $message = "<div style='text-align: left;'>";
+    $message .= "<div style='margin-bottom: 15px;'>";
+    $message .= "✅ <strong>{$stats['success']}</strong> berhasil";
+    if ($stats['failed'] > 0) $message .= " | ❌ <strong>{$stats['failed']}</strong> gagal";
+    if ($stats['not_found'] > 0) $message .= " | ⚠️ <strong>{$stats['not_found']}</strong> tidak ditemukan";
+    if ($stats['invalid'] > 0) $message .= " | 🚫 <strong>{$stats['invalid']}</strong> invalid";
+    $message .= "</div>";
+
+    // Show detailed errors if any (only if there are errors)
+    if (!empty($stats['errors'])) {
+      $errorCount = count($stats['errors']);
+      $maxErrors = 10; // Show max 10 errors
+
+      $message .= "<div style='margin-top: 10px; max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; padding: 8px; border-radius: 4px; background-color: #fff5f5;'>";
+      $message .= "<strong style='color: #dc3545; font-size: 0.9em;'>Detail Error:</strong>";
+      $message .= "<ul style='margin-top: 8px; margin-bottom: 0; padding-left: 18px; text-align: left; font-size: 0.85em;'>";
+
+      if ($errorCount <= $maxErrors) {
+        foreach ($stats['errors'] as $error) {
+          $message .= "<li style='margin-bottom: 4px;'>" . esc($error) . "</li>";
+        }
+      } else {
+        foreach (array_slice($stats['errors'], 0, $maxErrors) as $error) {
+          $message .= "<li style='margin-bottom: 4px;'>" . esc($error) . "</li>";
+        }
+        $message .= "<li style='margin-bottom: 4px; color: #6c757d; font-style: italic;'>+ " . ($errorCount - $maxErrors) . " error lainnya</li>";
+      }
+      $message .= "</ul>";
+      $message .= "</div>";
+    }
+
+    $message .= "</div>";
+
+    if ($stats['success'] > 0) {
+      return redirect()->back()->with('success', $message);
+    } else {
+      return redirect()->back()->with('error', $message);
+    }
+  }
+
+  private function deleteDirectory($dir)
+  {
+    if (!is_dir($dir)) {
+      return;
+    }
+    $files = array_diff(scandir($dir), ['.', '..']);
+    foreach ($files as $file) {
+      $path = $dir . '/' . $file;
+      if (is_dir($path)) {
+        $this->deleteDirectory($path);
+      } else {
+        unlink($path);
+      }
+    }
+    rmdir($dir);
   }
 
   public function downloadAllPeta($kegiatan_uuid)
